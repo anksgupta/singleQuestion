@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv='viewport' content='width=device-width, initial-scale=1'>
+    <title>angular app</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+	<div id="wrapper" class="container-fluid" ng-app="mainApp">
+		<div id="header" class="row"></div>
+		<div id="body" class="row" ng-controller="incrementController">
+			<form id="myForm" name="myForm">
+				<div ng-repeat="elem in order">
+					<div ng-if="fields[elem].type == 'Select'">
+						<div class="animate" id="input-{{fields[elem].name}}" ng-show="visible" check-for-cbq>
+							<p>selected item is : {{user[fields[elem].name].value}}</p>
+							<select name="{{fields[elem].name}}" ng-model="user[fields[elem].name]" ng-options="option.value as option.label for option in fields[elem].options"></select>
+						</div>
+					</div>
+					<div ng-if="fields[elem].type == 'RadioInTable'">
+						<div class="animate" id="input-{{fields[elem].name}}" ng-show="visible" check-for-cbq>
+							<p>selected item is : {{user[fields[elem].name].value}}</p>
+							<radio-in-table fieldname="fields[elem].name" options="fields[elem].options" user="user"/>
+						</div>	
+					</div>				
+				</div>
+				<div>dirty: {{myForm.$dirty}}</div>
+				<div>pristine: {{myForm.$pristine}}</div>
+				<div>valid: {{myForm.$valid}}</div>
+				<button ng-click="click()">Submit</button>
+			</form>
+		</div>
+		<div id="footer" class="row"></div>
+	</div>
+	<script charset="UTF-8" src="app/js/angular.js"></script>
+	<script charset="UTF-8" src="app/js/angular-animate.min.js"></script>
+	<script charset="UTF-8" src="app/app.js"></script>
+	<script charset="UTF-8" src="app/incrementController.js"></script>
+	<script charset="UTF-8" src="app/directives.js"></script>
+	<script charset="UTF-8" src="app/filters.js"></script>
+</body>

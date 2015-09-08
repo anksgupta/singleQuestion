@@ -1,0 +1,4 @@
+<div ng-click="updateModel(field.name, option.value);next()" ng-class="{myclass: option.value == user[field.name]}">
+	<span class="selected-text">{{selectedText}}</span>
+	<select ng-change="next()" name="field.name" ng-model="user[field.name]" ng-options="option.value as option.label for option in field.options"></select>	
+</div>

@@ -1,0 +1,1 @@
+<div ng-click="updateModel(field.name, option.value);isActive = $index" ng-class="{'myclass': isActive == $index}" ng-repeat="option in field.options" ng-bind-html="option.label | preseveHtml"></div>

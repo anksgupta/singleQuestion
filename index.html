@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv='viewport' content='width=device-width, initial-scale=1'>
+    <title>angular app</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+	<base href="/angular/">
+</head>
+<body>
+	<div id="wrapper" class="container-fluid" ng-app="mainApp">
+		<div id="header" class="row"></div>
+		<div id="body" class="row" ng-controller="prequalController">
+			<form id="myForm" name="myForm">
+				<div ng-repeat="field in json.form.fields">
+					<div ng-switch="field.type">
+						<div ng-switch-when="Select">
+							<div class="animate" id="input-{{field.name}}" ng-show="SingleQuestion.checkVisibility(field.name)">
+								<p>selected item is : {{user[field.name].value}}</p>
+								<select ng-change="next()" name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"></select>
+							</div>
+						</div>
+						<div ng-switch-when="RadioInTable">
+							<div class="animate" id="input-{{field.name}}" ng-show="SingleQuestion.checkVisibility(field.name)">
+								<p>selected item is : {{user[field.name].value}}</p>
+								<radio-in-table fieldname="field.name" options="field.options" user="user"/>
+							</div>	
+						</div>
+						<div ng-switch-when="CustomSelect">
+							<div class="animate" id="input-{{field.name}}" ng-show="SingleQuestion.checkVisibility(field.name)">
+								<p>selected item is : {{user[field.name].value}}</p>
+								<custom-Select/>
+							</div>	
+						</div>
+						<div ng-switch-when="Text">
+							<div class="animate" id="input-{{field.name}}" ng-show="SingleQuestion.checkVisibility(field.name)">
+								<p>selected item is : {{user[field.name].value}}</p>
+								<div ng-switch="field.name">
+									<input ng-switch-when="Age" ng-keyup="handleAge(user[field.name])" on-change name="{{field.name}}" ng-model="user[field.name].value"/>
+									<input ng-switch-when="HighSchoolGradYear" ng-keyup="handleHSGY(user[field.name])" on-change name="{{field.name}}" ng-model="user[field.name].value"/>
+									<input ng-switch-default on-change name="{{field.name}}" ng-model="user[field.name].value"/>
+								</div>
+							</div>	
+						</div>					
+					</div>
+				</div>
+				<div>dirty: {{myForm.$dirty}}</div>
+				<div>pristine: {{myForm.$pristine}}</div>
+				<div>valid: {{myForm.$valid}}</div>
+				<a href="javascript:;" ng-show="SingleQuestion.current != 0" ng-click="SingleQuestion.showPrevious();">Back</a>
+				<button ng-show="SingleQuestion.isValidElem()" ng-click="SingleQuestion.showNext();">Next</button>
+				<button ng-show="current == order.length - 1" ng-click="click()">Submit</button>
+				<div class="rail">
+                    <div class="inner_rail">
+                        <div class="bar" ng-style="{'width': progressBarWidth + '%'}"></div>
+                    </div>
+                </div>
+				<a href="/">Home</a>
+				<a href="/angular/another">another</a>
+				<a href="/angular/tags/1">tags/1</a>
+				
+				<div ng-view></div>
+			</form>
+		</div>
+		<div id="footer" class="row"></div>
+	</div>
+	<script charset="UTF-8" src="app/js/angular.js"></script>
+	<script charset="UTF-8" src="app/js/angular-animate.min.js"></script>
+	<script charset="UTF-8" src="app/js/angular-route.min.js"></script>
+	<script charset="UTF-8" src="app/app.js"></script>
+	<script charset="UTF-8" src="app/prequalController.js"></script>
+	<script charset="UTF-8" src="app/services.js"></script>
+	<script charset="UTF-8" src="app/directives.js"></script>
+	<script charset="UTF-8" src="app/filters.js"></script>
+</body>

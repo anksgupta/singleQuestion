@@ -1,0 +1,67 @@
+@CHARSET "UTF-8";
+
+#input-ProgramsOfInterestType{
+	width: 30%
+}
+.myclass{
+	background: #AAAAE0
+}
+.select-container{
+	display: block;
+	text-align: center;
+	cursor: pointer;
+	position: relative;
+	margin: .5em 0;
+	padding: 0;
+	border: 1px solid #ccc;
+	box-shadow: 0 1px 3px rgba(0,0,0,.2)
+}
+.selected-text{
+	display: block;
+  	position: relative;
+}
+.select-container select{
+	position: absolute;
+	opacity: 0;
+  	z-index: 2;
+}
+.rail{
+	height: 16px;
+	width: 240px;
+	margin: 0 auto;
+	border: 1px solid #666666;
+	background: #ccc
+}
+.rail > .inner_rail {
+	height: 12px;
+	padding: 2px;
+}
+.rail > .inner_rail > .bar {
+	background: #f8a405;
+	height: 100%;
+	width: 0
+}
+/*.animate.ng-hide-add-active,
+.animate.ng-hide-remove-active {
+  transition: 1s ease-in-out all;
+}
+.animate.ng-hide {
+	opacity: 0;
+}
+.animate, .animate.ng-hide.ng-hide-active {
+	opacity: 1;
+}
+.animate.ng-hide{
+	transition: 0.5s ease-in-out all;
+	-webkit-transition: 0.5s ease-in-out all;
+	-moz-transition: 0.5s ease-in-out all;
+	-o-transition: 0.5s ease-in-out all;
+}*/
+.animate{
+	overflow-y: hidden;
+	max-height: 500px; /* approximate max height */
+	transition: .5s cubic-bezier(0, 1, 0.5, 1);
+}
+.animate.ng-hide {
+	max-height: 0;
+}
