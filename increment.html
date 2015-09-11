@@ -13,13 +13,15 @@
 			<form id="myForm" name="myForm">
 				<div ng-repeat="elem in order">
 					<div ng-if="fields[elem].type == 'Select'">
-						<div class="animate" id="input-{{fields[elem].name}}" ng-show="visible" check-for-cbq>
+						<div class="animate" id="input-{{fields[elem].name}}">
+							<check-for-cbq fieldname="elem" field="fields[elem]" user="user" cbq="cbq"/>
 							<p>selected item is : {{user[fields[elem].name].value}}</p>
-							<select name="{{fields[elem].name}}" ng-model="user[fields[elem].name]" ng-options="option.value as option.label for option in fields[elem].options"></select>
+							<select name="{{fields[elem].name}}" ng-model="user[fields[elem].name].value" ng-options="option.value as option.label for option in fields[elem].options"></select>
 						</div>
 					</div>
 					<div ng-if="fields[elem].type == 'RadioInTable'">
-						<div class="animate" id="input-{{fields[elem].name}}" ng-show="visible" check-for-cbq>
+						<div class="animate" id="input-{{fields[elem].name}}">
+							<check-for-cbq fieldname="elem" field="fields[elem]" user="user" cbq="cbq"/>
 							<p>selected item is : {{user[fields[elem].name].value}}</p>
 							<radio-in-table fieldname="fields[elem].name" options="fields[elem].options" user="user"/>
 						</div>	
@@ -35,8 +37,11 @@
 	</div>
 	<script charset="UTF-8" src="app/js/angular.js"></script>
 	<script charset="UTF-8" src="app/js/angular-animate.min.js"></script>
+	<script charset="UTF-8" src="app/js/angular-route.min.js"></script>
 	<script charset="UTF-8" src="app/app.js"></script>
 	<script charset="UTF-8" src="app/incrementController.js"></script>
+	<script charset="UTF-8" src="app/HttpService.js"></script>
+	<script charset="UTF-8" src="app/CBQService.js"></script>
 	<script charset="UTF-8" src="app/directives.js"></script>
 	<script charset="UTF-8" src="app/filters.js"></script>
 </body>

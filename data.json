@@ -18,7 +18,7 @@
     },
     "form": {
         "name": "prequal",
-        "cbq": "({'NursingEducation':{o:1080,k:82612360,p:['AreaOfInterest_DisplayName','AreaOfInterest'],s:false,e:true,r:true},'LicensedNurse':{o:1120,k:11710103,p:['AreaOfInterest'],s:false,e:false,r:true}})",
+        "cbq": "({'Age':{o:1080,k:82612360,p:['AreaOfInterest_DisplayName','AreaOfInterest'],s:false,e:true,r:true},'DegreeStartTimeframe':{o:1120,k:11710103,p:['AreaOfInterest'],s:false,e:false,r:true}})",
         "tcpa": {
             "required": false
         },
@@ -28,7 +28,7 @@
                 "type": "Select",
                 "label": "What is your area of interest?",
                 "is_cbq": false,
-                "value": "BUSINESS",
+                "value": "",
                 "is_hidden": false,
                 "is_required": true,
                 "is_valid": true,
@@ -95,8 +95,8 @@
                 "name": "DegreeStartTimeframe",
                 "type": "RadioInTable",
                 "label": "When would you like to start?",
-                "is_cbq": false,
-                "value": "4-6 months",
+                "is_cbq": true,
+                "value": "",
                 "is_hidden": false,
                 "is_required": true,
                 "is_valid": true,
@@ -131,7 +131,7 @@
             },
             "Age": {
                 "name": "Age",
-                "type": "Text",
+                "type": "Select",
                 "label": "What is your age?",
                 "is_cbq": false,
                 "value": "",
@@ -821,8 +821,7 @@
         },
         "order": [
             "ProgramsOfInterestType",
-            "DegreeStartTimeframe",
-            "Age",
+            ["DegreeStartTimeframe", "Age"],
             ["HighSchoolGradYear", "EducationLevel"],
             ["Military", "Citizenship"]
         ],

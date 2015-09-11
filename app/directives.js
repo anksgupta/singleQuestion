@@ -54,25 +54,49 @@ mainApp.directive('onChange', function() {
     }      
 });
 
-mainApp.directive('checkForCbq', ['$timeout', function($timeout){
+mainApp.directive('checkForCbq', ['CBQService', function(CBQService){
 	return {
-		restrict: 'A',
-		scope:true,
+		restrict: 'E',
+		scope: {
+			fieldname: '=',
+			field: '=',
+			user: '=',
+			cbq: '='
+		},
 		controller: ['$scope', function($scope) {
-			$scope.visible = true
+			//$scope.visible = true
 	    }],
 		link: function link(scope, element, attrs) {
-			var field = scope.fields[scope.elem];
-			if(field['is_cbq']){
-				$timeout(function(){
-					var parents = scope.cbq[scope.fields[scope.elem].name].p;
-					angular.forEach(parents, function(parent){
-						scope.$watch(function(){return scope.user[parent]}, function(value) {
-							console.log('value changed, new value is: ' + value);
-					    });
+			if(scope.field['is_cbq']){
+				scope.postDataObj = {};
+				angular.forEach(scope.cbq[scope.fieldname].p, function(parent){
+					scope.$watchCollection(function(){return scope.user[parent]}, function(newValue) {
+						console.log('value changed, new value is: ' + newValue.value);
+						scope.postDataObj['key'] = scope.cbq[scope.fieldname].k;
+						scope.postDataObj[scope.cbq[scope.fieldname].p] = newValue.value;
+						CBQService.handleCBQ(scope.postDataObj)
+							.then(function(data){
+								console.log(data)
+							}, function(data){
+								
+							})
 					});
 				});
 			}
 	    }
 	}
+}]);
+
+// Handle field visibilty on current change
+mainApp.directive('toggleField',['SingleQuestion', function(SingleQuestion) {
+    return {
+        restrict: 'A',
+        scope: true,
+        link: function(scope, element, attrs){
+			scope.name = attrs["toggleField"];
+			scope.$on('currentUpdated', function(){
+				SingleQuestion.checkVisibility(scope.name) ? element.removeClass('ng-hide') : element.addClass('ng-hide');
+			});
+        }
+    }      
 }]);
