@@ -91,11 +91,68 @@ mainApp.directive('checkForCbq', ['CBQService', function(CBQService){
 mainApp.directive('toggleField',['SingleQuestion', function(SingleQuestion) {
     return {
         restrict: 'A',
-        scope: true,
-        link: function(scope, element, attrs){
+        scope: {},
+        link: function(scope, element, attrs){console.log('toggleField');
 			scope.name = attrs["toggleField"];
 			scope.$on('currentUpdated', function(){
 				SingleQuestion.checkVisibility(scope.name) ? element.removeClass('ng-hide') : element.addClass('ng-hide');
+			});
+        }
+    }      
+}]);
+
+// SingleQuestion directive
+mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQuestion) {
+    return {
+        restrict: 'E',
+        scope: {
+			order: '=',
+			cbq: '=',
+			user: '='
+		},
+		template: '<a href="javascript:;" ng-show="SingleQuestion.current != 0" ng-click="SingleQuestion.showPrevious();">Back</a>' +
+				'<button ng-show="SingleQuestion.isValidElem()" ng-click="SingleQuestion.showNext();">Next</button>' +
+				'<button ng-show="current == order.length - 1" ng-click="click()">Submit</button>' +
+				'<div class="rail"><div class="inner_rail"><div class="bar" ng-style="{\'width\': progressBarWidth + \'%\'}"></div></div></div>',
+        link: function(scope, element, attrs){ console.log('singleQuestionDirective');
+			scope.$on('progressBarWidthUpdated', function(){
+				scope.progressBarWidth = SingleQuestion.progressBarWidth
+			});
+			
+			scope.$on('currentUpdated', function(){
+				scope.current = SingleQuestion.current
+			});
+			
+			scope.SingleQuestion = SingleQuestion.init({
+				order: scope.order,
+				cbq: eval(scope.cbq),
+				callback: {
+					'before_next': function(){
+						
+					},
+					'getUserData': function(field){
+						return scope.user[field].value
+					},
+					'isCBQ': function(field){
+						var obj = {};
+						if(angular.isArray(field)){
+							angular.forEach(field, function(elem){
+								obj[elem] = {'is_cbq': scope.fields[elem]['is_cbq']}
+							});
+						}else{
+							obj[field] = {'is_cbq': scope.fields[field]['is_cbq']}
+						}
+						return obj // return value will be something like {'Age': {'is_cbq': true}}
+					}
+				}
+			});
+			
+			angular.forEach(scope.SingleQuestion.order, function(field){
+				scope.$watchCollection(function(){return scope.user[field]}, function(newValue, oldValue) {
+					if(newValue !== oldValue){
+						scope.SingleQuestion.showNext()
+					}
+				});
 			});
         }
     }      

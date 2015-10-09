@@ -12,49 +12,55 @@
 		<div id="header" class="row"></div>
 		<div id="body" class="row" ng-controller="prequalController">
 			<form id="myForm" name="myForm">
-				<div ng-repeat="field in json.form.fields">
-					<div ng-switch="field.type">
-						<div ng-switch-when="Select">
-							<div class="animate ng-hide" id="input-{{field.name}}" toggle-field="{{field.name}}">
-								<p>selected item is : {{user[field.name].value}}</p>
-								<select ng-change="next()" name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"></select>
-							</div>
-						</div>
-						<div ng-switch-when="RadioInTable">
-							<div class="animate ng-hide" id="input-{{field.name}}" toggle-field="{{field.name}}">
-								<p>selected item is : {{user[field.name].value}}</p>
-								<radio-in-table fieldname="field.name" options="field.options" user="user"/>
-							</div>	
-						</div>
-						<div ng-switch-when="CustomSelect">
-							<div class="animate ng-hide" id="input-{{field.name}}" toggle-field="{{field.name}}">
-								<p>selected item is : {{user[field.name].value}}</p>
-								<custom-Select/>
-							</div>	
-						</div>
-						<div ng-switch-when="Text">
-							<div class="animate ng-hide" id="input-{{field.name}}" toggle-field="{{field.name}}">
-								<p>selected item is : {{user[field.name].value}}</p>
-								<div ng-switch="field.name">
-									<input ng-switch-when="Age" ng-keyup="handleAge(user[field.name])" on-change name="{{field.name}}" ng-model="user[field.name].value"/>
-									<input ng-switch-when="HighSchoolGradYear" ng-keyup="handleHSGY(user[field.name])" on-change name="{{field.name}}" ng-model="user[field.name].value"/>
-									<input ng-switch-default on-change name="{{field.name}}" ng-model="user[field.name].value"/>
+				<div ng-if="dataLoaded">
+					<div ng-repeat="field in json.form.fields">
+						<div ng-switch="field.type">
+							<div ng-switch-when="Select">
+								<div class="animate ng-hide" id="input-{{field.name}}" toggle-field="{{field.name}}">
+									<p>selected item is : {{user[field.name].value}}</p>
+									<select ng-change="next()" name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"></select>
 								</div>
-							</div>	
-						</div>					
+							</div>
+							<div ng-switch-when="RadioInTable">
+								<div class="animate ng-hide" id="input-{{field.name}}" toggle-field="{{field.name}}">
+									<p>selected item is : {{user[field.name].value}}</p>
+									<radio-in-table fieldname="field.name" options="field.options" user="user"/>
+								</div>	
+							</div>
+							<div ng-switch-when="CustomSelect">
+								<div class="animate ng-hide" id="input-{{field.name}}" toggle-field="{{field.name}}">
+									<p>selected item is : {{user[field.name].value}}</p>
+									<custom-Select/>
+								</div>	
+							</div>
+							<div ng-switch-when="Text">
+								<div class="animate ng-hide" id="input-{{field.name}}" toggle-field="{{field.name}}">
+									<p>selected item is : {{user[field.name].value}}</p>
+									<div ng-switch="field.name">
+										<input ng-switch-when="Age" ng-keyup="handleAge(user[field.name])" on-change name="{{field.name}}" ng-model="user[field.name].value"/>
+										<input ng-switch-when="HighSchoolGradYear" ng-keyup="handleHSGY(user[field.name])" on-change name="{{field.name}}" ng-model="user[field.name].value"/>
+										<input ng-switch-default on-change name="{{field.name}}" ng-model="user[field.name].value"/>
+									</div>
+								</div>	
+							</div>					
+						</div>
 					</div>
-				</div>
 				<div>dirty: {{myForm.$dirty}}</div>
 				<div>pristine: {{myForm.$pristine}}</div>
 				<div>valid: {{myForm.$valid}}</div>
-				<a href="javascript:;" ng-show="SingleQuestion.current != 0" ng-click="SingleQuestion.showPrevious();">Back</a>
+				
+				
+				<single-question-directive order="order" cbq="form.cbq" user="user"/>
+			</div>
+				
+				<!--<a href="javascript:;" ng-show="SingleQuestion.current != 0" ng-click="SingleQuestion.showPrevious();">Back</a>
 				<button ng-show="SingleQuestion.isValidElem()" ng-click="SingleQuestion.showNext();">Next</button>
 				<button ng-show="current == order.length - 1" ng-click="click()">Submit</button>
 				<div class="rail">
                     <div class="inner_rail">
                         <div class="bar" ng-style="{'width': progressBarWidth + '%'}"></div>
                     </div>
-                </div>
+                </div> -->
 				<a href="/">Home</a>
 				<a href="/angular/another">another</a>
 				<a href="/angular/tags/1">tags/1</a>

@@ -21,9 +21,9 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', '$timeout',
 					break;
 			}
 			
-			$timeout(function(){
-				$rootScope.$broadcast('currentUpdated');
-			})
+			//$timeout(function(){
+			$rootScope.$broadcast('currentUpdated');
+			//})
 			
 			this.setProgressBarWidth();
 			
