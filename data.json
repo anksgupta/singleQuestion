@@ -28,7 +28,7 @@
                 "type": "Select",
                 "label": "What is your area of interest?",
                 "is_cbq": false,
-                "value": "",
+                "value": "BUSINESS",
                 "is_hidden": false,
                 "is_required": true,
                 "is_valid": true,
@@ -131,7 +131,7 @@
             },
             "Age": {
                 "name": "Age",
-                "type": "Select",
+                "type": "Text",
                 "label": "What is your age?",
                 "is_cbq": false,
                 "value": "",
@@ -820,7 +820,7 @@
             }
         },
         "order": [
-            "ProgramsOfInterestType",
+            ["ProgramsOfInterestType"],
             ["DegreeStartTimeframe", "Age"],
             ["HighSchoolGradYear", "EducationLevel"],
             ["Military", "Citizenship"]

@@ -22,16 +22,28 @@ mainApp.directive("radioInTable", function(){
 mainApp.directive("customSelect", function(){
 	return {
 		restrict: 'E',
-		scope: true,
-		template: '<div ng-click="" ng-class="{myclass: option.value == user[fields[elem].name]}" class="select-container">' + 
-					'<span class="selected-text">{{selectedText}}</span>' + 
-					'<select ng-change="next()" name="{{fields[elem].name}}" ng-model="user[fields[elem].name]" ng-options="option.value as option.label for option in fields[elem].options"></select>' + 
+		scope: {
+			fieldname: '=',
+			options: '=',
+			user: '='
+		},
+		template: '<div class="select-container">' + 
+					'<span class="selected-text">{{user[fieldname].value}}</span>' + 
+					'<ul name="{{fieldname}}" ng-model="user[fieldname]">'+
+						'<li ng-repeat="option in options" value="{{option.value}}" ng-click="updateModel(option.value)" ng-class="{myclass: option.value == user[fieldname]}">{{option.label}}</li>'+
+					'</ul>'+
+					'<select name="{{fieldname}}" ng-model="user[fieldname]" ng-options="option.value as option.label for option in options"></select>' + 
 				'</div>',
 		controller: ['$scope', function($scope) {
 			
 	    }],
 	    link: function(scope, element, attrs) {
-			
+			var fieldName = scope.fieldname;
+			scope.updateModel = function(value) {
+				if(scope.user[fieldName].value == value)
+					scope.user[fieldName].unchanged = new Date().getTime()  // flag to handle a case in which user clicks on the same option and shownext should be called
+                scope.user[fieldName].value = value;
+            }
 	    }
 	}
 });
@@ -92,7 +104,7 @@ mainApp.directive('toggleField',['SingleQuestion', function(SingleQuestion) {
     return {
         restrict: 'A',
         scope: {},
-        link: function(scope, element, attrs){console.log('toggleField');
+        link: function(scope, element, attrs){
 			scope.name = attrs["toggleField"];
 			scope.$on('currentUpdated', function(){
 				SingleQuestion.checkVisibility(scope.name) ? element.removeClass('ng-hide') : element.addClass('ng-hide');
@@ -102,30 +114,40 @@ mainApp.directive('toggleField',['SingleQuestion', function(SingleQuestion) {
 }]);
 
 // SingleQuestion directive
-mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQuestion) {
-    return {
+mainApp.directive('singleQuestionDirective',['SingleQuestion', '$timeout', function(SingleQuestion, $timeout) {
+	return {
         restrict: 'E',
         scope: {
 			order: '=',
 			cbq: '=',
-			user: '='
+			user: '=',
+			fields: '=',
+			validations: '='
 		},
-		template: '<a href="javascript:;" ng-show="SingleQuestion.current != 0" ng-click="SingleQuestion.showPrevious();">Back</a>' +
-				'<button ng-show="SingleQuestion.isValidElem()" ng-click="SingleQuestion.showNext();">Next</button>' +
-				'<button ng-show="current == order.length - 1" ng-click="click()">Submit</button>' +
+		template: '<a href="javascript:;" id="backBtn" ng-click="SingleQuestion.showPrevious();">Back</a>' +
+				'<button id="nextBtn" ng-click="SingleQuestion.showNext();">Next</button>' +
+				'<button id="submitBtn" ng-click="click()">Submit</button>' +
 				'<div class="rail"><div class="inner_rail"><div class="bar" ng-style="{\'width\': progressBarWidth + \'%\'}"></div></div></div>',
-        link: function(scope, element, attrs){ console.log('singleQuestionDirective');
+        link: function(scope, element, attrs){
 			scope.$on('progressBarWidthUpdated', function(){
 				scope.progressBarWidth = SingleQuestion.progressBarWidth
 			});
+			var nextBtnElem = angular.element(document.getElementById('nextBtn')), 
+				backBtnElem = angular.element(document.getElementById('backBtn')), 
+				submitBtn= angular.element(document.getElementById('submitBtn'));
 			
 			scope.$on('currentUpdated', function(){
-				scope.current = SingleQuestion.current
+				scope.current = SingleQuestion.current;
+				
+				SingleQuestion.isValidStep() ? nextBtnElem.removeClass('ng-hide') : nextBtnElem.addClass('ng-hide');
+				(scope.current === scope.order.length - 1) ? submitBtn.removeClass('ng-hide') : submitBtn.addClass('ng-hide');
+				(scope.current !== 0) ? backBtnElem.removeClass('ng-hide') : backBtnElem.addClass('ng-hide');
 			});
 			
 			scope.SingleQuestion = SingleQuestion.init({
 				order: scope.order,
 				cbq: eval(scope.cbq),
+				fieldValidations : scope.validations,
 				callback: {
 					'before_next': function(){
 						
@@ -148,12 +170,22 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQu
 			});
 			
 			angular.forEach(scope.SingleQuestion.order, function(field){
-				scope.$watchCollection(function(){return scope.user[field]}, function(newValue, oldValue) {
+				if(angular.isArray(field)){
+					angular.forEach(field, function(elem){
+						addWatch(elem)
+					});
+				} else {									 
+					addWatch(field)
+				}
+			})
+			
+			function addWatch(fieldName){
+				scope.$watchCollection(function(){return scope.user[fieldName]}, function(newValue, oldValue) {
 					if(newValue !== oldValue){
 						scope.SingleQuestion.showNext()
 					}
 				});
-			});
+			}
         }
     }      
 }]);
