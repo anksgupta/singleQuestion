@@ -6,7 +6,7 @@ mainApp.controller('incrementController', ['$scope', 'HttpService', function($sc
 			$scope.json = data;
 			$scope.fields = data.form.fields;
 			$scope.order = data.form.order;
-			$scope.cbq = eval(data.form.cbq);
+			$scope.criteria = eval(data.form.cbq);
 			
 			angular.forEach($scope.fields, function(field){
 				$scope.user[field.name] = {};

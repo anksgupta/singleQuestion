@@ -1,8 +1,8 @@
 mainApp.factory("HttpService", ['$http', '$q', function($http, $q){
 	return {
-		getData: function(url){
+		getData: function(url, postDataObj){
 			var deferred = $q.defer();	//Creating a deferred object
-			$http.get(url)
+			$http.post(url, postDataObj)
 				.success(function(data) {
 					deferred.resolve(data)	//Passing data to deferred's resolve function on successful completion
 				})

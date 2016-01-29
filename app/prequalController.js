@@ -27,8 +27,10 @@ mainApp.controller('prequalController', ['$scope', 'HttpService', 'SingleQuestio
 				}
 			});
 			
-			$scope.click = function(){
-				var responsePromise = $http.post("/angularjs-examples/json-test-data.jsp", $scope.user, {});
+			$scope.submit = function(callback){
+				if(typeof callback === 'function')
+					callback()
+				var responsePromise = HttpService.getData("/angularjs-examples/json-test-data.jsp", $scope.user);
 			};
 			
 		}, function(data){

@@ -403,7 +403,7 @@
         "type": "Select",
         "label": "What is your program of interest?",
         "is_cbq": false,
-        "value": "",
+        "value": "BUSINESS",
         "is_hidden": false,
         "is_required": true,
         "is_valid": true,

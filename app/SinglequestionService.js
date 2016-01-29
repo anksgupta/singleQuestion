@@ -1,4 +1,4 @@
-mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', '$timeout', function($rootScope, CBQService, $q, $timeout){
+mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', function($rootScope, CBQService, $q){
 	var defaults = {
         callback: {},
         current: 0,
@@ -6,7 +6,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', '$timeout',
 		cbq: {},
 		CBQObj: {},
 		fieldValidations: {},
-        history_back: false
+        autoSubmit: false
 	};
 	return {
 		init: function(options){
@@ -69,23 +69,29 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', '$timeout',
 				this.callback['before_next'].call(this)
 			
 			if(this.isValidStep()){
-				promise = this.handleCBQPromise(this.current + 1);
-				// Add all the deferred objects for each field to $q service queue
-				$q.all(promise).then(function(cbqCount) {
-					self.current++;
-					if(cbqCount.indexOf('is-cbq') > -1 || cbqCount.indexOf('is-field') > -1){
-						// if promise response has at least one valid CBQ field or a Standard field; broadcast currentUpdated
-						$rootScope.$broadcast('currentUpdated')
-					}else{
-						// if promise response does not have any valid CBQ field or a Standard field then current step is invalid and call the showNext step
-						self.showNext()
-					}
-					self.setProgressBarWidth();
-			
-					if(typeof self.callback['after_next'] === 'function')
-						self.callback['after_next'].call(self)
-				});
-				return false;
+				// If current step is not the last step, then only proceed further
+				if(this.current !== (this.order.length - 1)){
+					promise = this.handleCBQPromise(this.current + 1);
+					// Add all the deferred objects for each field to $q service queue
+					$q.all(promise).then(function(cbqCount) {
+						self.current++;
+						if(cbqCount.indexOf('is-cbq') > -1 || cbqCount.indexOf('is-field') > -1){
+							// if promise response has at least one valid CBQ field or a Standard field; broadcast currentUpdated
+							$rootScope.$broadcast('currentUpdated')
+						}else{
+							// if promise response does not have any valid CBQ field or a Standard field then current step is invalid and call the showNext step
+							self.showNext()
+						}
+						self.setProgressBarWidth();
+				
+						if(typeof self.callback['after_next'] === 'function')
+							self.callback['after_next'].call(self)
+					});
+				}else if(this.autoSubmit){
+					if(typeof this.callback['submit'] === 'function')
+						this.callback['submit'].call(this)
+				}
+				//return false;
 			}
 		},
 		showPrevious: function(){
