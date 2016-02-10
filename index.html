@@ -15,25 +15,25 @@
 					<div ng-repeat="field in json.form.fields">
 						<div ng-switch="field.type">
 							<div ng-switch-when="Select">
-								<div class="animate ng-hide" id="input-{{field.name}}" single-question-toggle-field="{{field.name}}">
+								<div class="animate ng-hide" id="input-{{field.name}}">
 									<p>selected item is : {{user[field.name].value}}</p>
 									<select ng-change="next()" name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"></select>
 								</div>
 							</div>
 							<div ng-switch-when="RadioInTable">
-								<div class="animate ng-hide" id="input-{{field.name}}" single-question-toggle-field="{{field.name}}">
+								<div class="animate ng-hide" id="input-{{field.name}}">
 									<p>selected item is : {{user[field.name].value}}</p>
 									<radio-in-table fieldname="field.name" options="field.options" user="user"/>
 								</div>	
 							</div>
 							<div ng-switch-when="CustomSelect">
-								<div class="animate ng-hide" id="input-{{field.name}}" single-question-toggle-field="{{field.name}}">
+								<div class="animate ng-hide" id="input-{{field.name}}">
 									<p>selected item is : {{user[field.name].value}}</p>
 									<custom-Select fieldname="field.name" options="field.options" user="user"/>
 								</div>	
 							</div>
 							<div ng-switch-when="Text">
-								<div class="animate ng-hide" id="input-{{field.name}}" single-question-toggle-field="{{field.name}}">
+								<div class="animate ng-hide" id="input-{{field.name}}">
 									<p>selected item is : {{user[field.name].value}}</p>
 									<div ng-switch="field.name">
 										<input ng-switch-when="Age" max="99" type="number" on-change name="{{field.name}}" ng-model="user[field.name].value"/>

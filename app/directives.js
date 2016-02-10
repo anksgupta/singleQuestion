@@ -152,20 +152,6 @@ mainApp.directive('cbq', ['CBQService', function(CBQService){
 	}
 }]);
 
-// Handle field visibilty on current change
-mainApp.directive('singleQuestionToggleField',['SingleQuestion', function(SingleQuestion) {
-    return {
-        restrict: 'A',
-        scope: {},
-        link: function(scope, element, attrs){
-			scope.name = attrs["singleQuestionToggleField"];
-			scope.$on('currentUpdated', function(){
-				SingleQuestion.checkVisibility(scope.name) ? element.removeClass('ng-hide') : element.addClass('ng-hide');
-			});
-        }
-    }      
-}]);
-
 // SingleQuestion directive
 mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQuestion) {
 	return {
@@ -183,19 +169,49 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQu
 				'<button id="submitBtn" ng-click="submit()">Submit</button>' +
 				'<div class="rail"><div class="inner_rail"><div class="bar" ng-style="{\'width\': progressBarWidth + \'%\'}"></div></div></div>',
         link: function(scope, element, attrs){
-			scope.$on('progressBarWidthUpdated', function(){
-				scope.progressBarWidth = SingleQuestion.progressBarWidth
-			});
 			var nextBtnElem = angular.element(document.getElementById('nextBtn')), 
 				backBtnElem = angular.element(document.getElementById('backBtn')), 
-				submitBtn= angular.element(document.getElementById('submitBtn'));
+				submitBtn= angular.element(document.getElementById('submitBtn')),
+				showNextBtn = function(){
+					nextBtnElem.addClass('ng-hide');
+					if(SingleQuestion.current !== SingleQuestion.order.length - 1){
+						var step = SingleQuestion.order[SingleQuestion.current];
+						if(step.length > 1){
+							nextBtnElem.removeClass('ng-hide')
+						} else if((scope.fields[step[0]].type).toLowerCase() === "text") {
+							nextBtnElem.removeClass('ng-hide')
+						} else{
+							SingleQuestion.isValidSingleQuestionStep().then(function(result){
+								result ? nextBtnElem.removeClass('ng-hide') : nextBtnElem.addClass('ng-hide');
+							});
+						}
+					}
+				},
+				showHideStep = function(elementToHide){
+					var currentStep = SingleQuestion.order[SingleQuestion.current];
+					// first hide previously active element 
+					if(elementToHide.length > 0){
+						for(var i = 0; i < elementToHide.length; i++){
+							angular.element(document.getElementById('input-' + elementToHide[i])).addClass('ng-hide');
+						}
+					}
+					// show fields in current order
+					for(var i = 0; i < currentStep.length; i++){
+						if(SingleQuestion.checkVisibility(currentStep[i]))
+							angular.element(document.getElementById('input-' + currentStep[i])).removeClass('ng-hide');
+					}
+				};
 			
-			scope.$on('currentUpdated', function(){
+			
+			scope.$on('currentUpdated', function(event, args){
 				scope.current = SingleQuestion.current;
+				// update current and validate next step
+				showNextBtn();
+				showHideStep(args ? args.elementToHide : []);
+				(SingleQuestion.current === SingleQuestion.order.length - 1) ? submitBtn.removeClass('ng-hide') : submitBtn.addClass('ng-hide');
+				(SingleQuestion.current !== 0) ? backBtnElem.removeClass('ng-hide') : backBtnElem.addClass('ng-hide');
 				
-				SingleQuestion.isValidStep() ? nextBtnElem.removeClass('ng-hide') : nextBtnElem.addClass('ng-hide');
-				(scope.current === scope.order.length - 1) ? submitBtn.removeClass('ng-hide') : submitBtn.addClass('ng-hide');
-				(scope.current !== 0) ? backBtnElem.removeClass('ng-hide') : backBtnElem.addClass('ng-hide');
+				scope.progressBarWidth = SingleQuestion.progressBarWidth
 			});
 			
 			scope.SingleQuestion = SingleQuestion.init({
@@ -209,14 +225,10 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQu
 					'getUserData': function(field){
 						return scope.user[field].value
 					},
-					'isCBQ': function(field){
+					'isCBQ': function(step){
 						var obj = {};
-						if(angular.isArray(field)){
-							angular.forEach(field, function(elem){
-								obj[elem] = {'is_cbq': scope.fields[elem]['is_cbq']}
-							});
-						}else{
-							obj[field] = {'is_cbq': scope.fields[field]['is_cbq']}
+						for(var i=0; i < step.length; i++){
+							obj[step[i]] = {'is_cbq': scope.fields[step[i]]['is_cbq']}
 						}
 						return obj // return value will be something like {'Age': {'is_cbq': true}}
 					},
@@ -226,22 +238,15 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQu
 				}
 			});
 			
-			angular.forEach(scope.SingleQuestion.order, function(field){
-				if(angular.isArray(field)){
-					angular.forEach(field, function(elem){
-						addWatch(elem)
+			for(var i=0;i < SingleQuestion.order.length; i++){
+				var fieldName = SingleQuestion.order[i];
+				if(fieldName.length === 1){
+					scope.$watchCollection(function(){return scope.user[fieldName]}, function(newValue, oldValue) {
+						if(newValue !== oldValue){
+							scope.SingleQuestion.showNext()
+						}
 					});
-				} else {									 
-					addWatch(field)
 				}
-			})
-			
-			function addWatch(fieldName){
-				scope.$watchCollection(function(){return scope.user[fieldName]}, function(newValue, oldValue) {
-					if(newValue !== oldValue){
-						scope.SingleQuestion.showNext()
-					}
-				});
 			}
         }
     }      

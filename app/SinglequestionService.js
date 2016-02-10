@@ -11,7 +11,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', function($r
 	return {
 		init: function(options){
 			angular.extend(this, defaults, options);
-			self = this,
+			var self = this;
 			this.current = 0, 
 			this.steps = this.order.length,
 			this.CBQObj = this.getCBQObj();	// create CBQObj on init, object is used to verify if field is CBQ type
@@ -22,8 +22,8 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', function($r
 			// set current property of SingleQuestion object
 			this.setCurrentValue(this.current, function(){
 				// callback function- to broadcast 'currentUpdated' event once steps are validated and 'current' is updated
-				$rootScope.$broadcast('currentUpdated');
 				self.setProgressBarWidth();
+				$rootScope.$broadcast('currentUpdated');
 				
 				if(typeof self.callback['after_load'] === 'function')
 					self.callback['after_load'].call(self)
@@ -32,67 +32,76 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', function($r
 			return this
 		},
 		isValidField: function(fieldName){	// method to validate individual field, fieldName is passed as parameter
-			var result = true;
-			if(!this.getUserData(fieldName) || 
-				(this.fieldValidations[fieldName] && !this.fieldValidations[fieldName](this.getUserData(fieldName)))) {	
-				// check if field value is empty/blank OR if validation condition exists AND field is NOT Valid
+			var result = true, deferred = $q.defer();
+			
+			if(!this.getUserData(fieldName)) {		// check if field value is empty
 				if(this.CBQObj[fieldName] && this.CBQObj[fieldName].is_cbq) {		// check if field is CBQ
-					if(this.CBQObj[fieldName].visible){		// CBQ field is not valid only if it is VISIBLE
-						result = false
+					if(this.CBQObj[fieldName].visible){		// CBQ field is VISIBLE then only it is considered as NOT valid 
+						result = false;
 					}	
-				} else {	// field is not CBQ then it is not valid as validation condition fails
+				} else {	// field is not CBQ then it is not valid as field is empty
 					result = false
 				}
+				deferred.resolve(result);
+			}else if(this.fieldValidations[fieldName]){	// check if field validation is defined in controller
+				this.fieldValidations[fieldName].call(this).then(function(result){	
+					deferred.resolve(result);
+				})
+			}else{
+				deferred.resolve(result)
 			}
-			return result
+			return deferred.promise;
+			//return result
 		},
-		isValidStep: function(field){		// method to validate Single Question step
+		isValidSingleQuestionStep: function(field){		// method to validate Single Question step, one Single Question step can have multiple fields
 			if(!field)
 				field = this.order[this.current]
 			
-			var result = true;
-			if(angular.isArray(field)){
-				for(var i = 0;i < field.length; i++){
-					if(!this.isValidField(field[i])){		// if field is not valid break 'for' loop
-						result = false
-						break;
-					}
-				}
-			} else if(!this.isValidField(field)){
-				result = false
-			}
-			return result
+			var result = true, promises = [], stepDeferredObj = $q.defer(), self = this;
+			angular.forEach(field, function(fieldName, index){
+				var deferred = $q.defer(); 	// creating deferred object outside foreach loop will always resolve last deferred object Promise 
+				self.isValidField(fieldName).then(function(result){
+					deferred.resolve(result)
+				});
+				promises.push(deferred.promise);
+			});
+			$q.all(promises).then(function(fieldResult){
+				(fieldResult.indexOf(false) > -1) ? stepDeferredObj.resolve(false): stepDeferredObj.resolve(true);
+			})
+			return stepDeferredObj.promise
 		},
 		showNext: function(){
 			var promise = [], self = this, CBQObj = {};
 			if(typeof this.callback['before_next'] === 'function')
 				this.callback['before_next'].call(this)
 			
-			if(this.isValidStep()){
+			this.isValidSingleQuestionStep().then(function(result){
+				if(result){
 				// If current step is not the last step, then only proceed further
-				if(this.current !== (this.order.length - 1)){
-					promise = this.handleCBQPromise(this.current + 1);
-					// Add all the deferred objects for each field to $q service queue
-					$q.all(promise).then(function(cbqCount) {
-						self.current++;
-						if(cbqCount.indexOf('is-cbq') > -1 || cbqCount.indexOf('is-field') > -1){
-							// if promise response has at least one valid CBQ field or a Standard field; broadcast currentUpdated
-							$rootScope.$broadcast('currentUpdated')
-						}else{
-							// if promise response does not have any valid CBQ field or a Standard field then current step is invalid and call the showNext step
-							self.showNext()
-						}
-						self.setProgressBarWidth();
-				
-						if(typeof self.callback['after_next'] === 'function')
-							self.callback['after_next'].call(self)
-					});
-				}else if(this.autoSubmit){
-					if(typeof this.callback['submit'] === 'function')
-						this.callback['submit'].call(this)
+					if(self.current !== (self.order.length - 1)){
+						promise = self.handleCBQPromise(self.current + 1);
+						// Add all the deferred objects for each field to $q service queue
+						$q.all(promise).then(function(cbqCount) {
+							self.current++;
+							self.setProgressBarWidth();
+							if(cbqCount.indexOf('is-cbq') > -1 || cbqCount.indexOf('is-field') > -1){
+								// if promise response has at least one valid CBQ field or a Standard field; broadcast currentUpdated
+								$rootScope.$broadcast('currentUpdated', {elementToHide: self.order[self.current - 1]})
+							}else{
+								// if promise response does not have any valid CBQ field or a Standard field then current step is invalid and call the showNext step
+								self.showNext()
+							}
+					
+							if(typeof self.callback['after_next'] === 'function')
+								self.callback['after_next'].call(self)
+						});
+					}else if(self.autoSubmit){
+						if(typeof self.callback['submit'] === 'function')
+							self.callback['submit'].call(self)
+					}
 				}
 				//return false;
-			}
+			})
 		},
 		showPrevious: function(){
 			if(typeof this.callback['before_prev'] === 'function')
@@ -100,8 +109,8 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', function($r
 			
 			this.current--;
 			var prevElem = this.order[this.current];
-			$rootScope.$broadcast('currentUpdated');
 			this.setProgressBarWidth();
+			$rootScope.$broadcast('currentUpdated', {elementToHide: this.order[this.current + 1]})
 			
 			if(typeof this.callback['after_prev'] === 'function')
 				this.callback['after_prev'].call(this)
@@ -110,20 +119,14 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', function($r
 		setProgressBarWidth: function(){
 			var width = Math.floor((this.current * 100) / this.steps);
 			this.progressBarWidth = width;
-			
-			$rootScope.$broadcast('progressBarWidthUpdated');
 		},
 		checkVisibility: function(name){
-			if(angular.isArray(this.order[this.current])){
-				// if field is CBQ check if field is visible and is in current order
-				if(this.CBQObj[name] && this.CBQObj[name].is_cbq){
-					return (this.CBQObj[name]['visible'] && this.order[this.current].indexOf(name) > -1)
-				} else {
-				// for standard field check if field is in current order
-					return (this.order[this.current].indexOf(name) > -1)
-				}
-			}else{
-				return name === this.order[this.current]
+			// if field is CBQ check if field is visible and is in current order
+			if(this.CBQObj[name] && this.CBQObj[name].is_cbq){
+				return (this.CBQObj[name]['visible'] && this.order[this.current].indexOf(name) > -1)
+			} else {
+			// for standard field check if field is in current order
+				return (this.order[this.current].indexOf(name) > -1)
 			}
 		},
 		getUserData: function(field){
@@ -145,11 +148,11 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', function($r
             return arguments[0];
         },
 		getCBQObj: function(){
-			var CBQObj = {}
+			var CBQObj = {};
 			for(var index = 0; index <= this.order.length - 1; index++) {
-				this.extend(CBQObj, this.isCBQ(this.order[index]))
+				this.extend(CBQObj, this.isCBQ(this.order[index]));
 			}
-			return CBQObj
+			return CBQObj;
 		},
 		handleCBQPromise: function(current){
 			// Method sets 'visible' property of CBQObj for CBQ field and returns array of promises for CBQ and non-CBQ fields
@@ -199,14 +202,16 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', function($r
 			// set 'visible' property in CBQObj for CBQ fields before validating current step
 			
 			$q.all(promise).then(function(data){
-				if(self.isValidStep()){
-					// only if current step is valid increment current step
-					self.current = ++current;
-					// always pass callback to recursive function
-					return self.setCurrentValue(self.current, callback)
-				}
-				if(typeof callback === "function")
-					callback();
+				self.isValidSingleQuestionStep().then(function(result){
+					if(result){
+						// only if current step is valid increment current step
+						self.current = ++current;
+						// always pass callback to recursive function
+						self.setCurrentValue(self.current, callback)
+					}else if(typeof callback === "function") {
+						callback();
+					}
+				})
 			},
 			function(){
 				console.log('setCurrentValue(): Error Message')

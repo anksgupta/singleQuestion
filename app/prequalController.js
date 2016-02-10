@@ -1,4 +1,4 @@
-mainApp.controller('prequalController', ['$scope', 'HttpService', 'SingleQuestion', '$rootScope', function($scope, HttpService, SingleQuestion, $rootScope){
+mainApp.controller('prequalController', ['$scope', '$q', 'HttpService', 'SingleQuestion', '$rootScope', function($scope, $q, HttpService, SingleQuestion, $rootScope){
 	HttpService.getData('data.json')
 		.then(function(data){
 			$scope.user = {};
@@ -12,20 +12,29 @@ mainApp.controller('prequalController', ['$scope', 'HttpService', 'SingleQuestio
 			
 			// Add all field validations for single question flow
 			$scope.fieldValidations = {
-				"Age": function(value){
-					return ((value.toString().length === 2) ?  true :  false)
+				"Age": function(){
+					var deferred = $q.defer();
+					HttpService.getData('addressValidator.on').then(function(){
+						(($scope.user["Age"].value.toString().length === 2) ?  deferred.resolve(true) :  deferred.resolve(false));
+					},function(){
+						(($scope.user["Age"].value.toString().length === 2) ?  deferred.resolve(true) :  deferred.resolve(false));
+					})
+					return deferred.promise;
 				},
-				"HighSchoolGradYear" : function(value){
-					return ((value.toString().length === 4) ?  true :  false)
+				"HighSchoolGradYear" : function(){
+					var deferred = $q.defer();
+					(($scope.user["HighSchoolGradYear"].value.toString().length === 4) ?  deferred.resolve(true) :  deferred.resolve(false));
+					return deferred.promise;
 				}
 			}
 			
-			angular.forEach($scope.fields, function(field){
+			for(var key in $scope.fields){
+				var field = $scope.fields[key];
 				$scope.user[field.name] = {};
 				if(field.value){
 					$scope.user[field.name].value = field.value;
 				}
-			});
+			}
 			
 			$scope.submit = function(callback){
 				if(typeof callback === 'function')
