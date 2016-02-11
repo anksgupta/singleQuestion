@@ -2,32 +2,12 @@ mainApp.controller('prequalController', ['$scope', '$q', 'HttpService', 'SingleQ
 	HttpService.getData('data.json')
 		.then(function(data){
 			$scope.user = {};
-			
+			$scope.json = data;
+			var form = $scope.json.form;
+			$scope.fields = form.fields;
 			$scope.dataLoaded = true;
 			
-			$scope.json = data;
-			$scope.form = $scope.json.form
-			$scope.order = $scope.form.order;
-			$scope.fields = $scope.form.fields;
-			
-			// Add all field validations for single question flow
-			$scope.fieldValidations = {
-				"Age": function(){
-					var deferred = $q.defer();
-					HttpService.getData('addressValidator.on').then(function(){
-						(($scope.user["Age"].value.toString().length === 2) ?  deferred.resolve(true) :  deferred.resolve(false));
-					},function(){
-						(($scope.user["Age"].value.toString().length === 2) ?  deferred.resolve(true) :  deferred.resolve(false));
-					})
-					return deferred.promise;
-				},
-				"HighSchoolGradYear" : function(){
-					var deferred = $q.defer();
-					(($scope.user["HighSchoolGradYear"].value.toString().length === 4) ?  deferred.resolve(true) :  deferred.resolve(false));
-					return deferred.promise;
-				}
-			}
-			
+			// Set prepopulated field values in User object
 			for(var key in $scope.fields){
 				var field = $scope.fields[key];
 				$scope.user[field.name] = {};
@@ -36,11 +16,48 @@ mainApp.controller('prequalController', ['$scope', '$q', 'HttpService', 'SingleQ
 				}
 			}
 			
-			$scope.submit = function(callback){
-				if(typeof callback === 'function')
-					callback()
-				var responsePromise = HttpService.getData("/angularjs-examples/json-test-data.jsp", $scope.user);
-			};
+			$scope.singleQuestionOptions = {
+				user: $scope.user,
+				fields: form.fields,
+				order: form.order,
+				cbq: eval(form.cbq),
+				fieldValidations : {
+				// Add all field validations for single question flow
+					"Age": function(){
+						var deferred = $q.defer();
+						HttpService.getData('/addressValidator.on').then(function(){
+							(($scope.user["Age"].value.toString().length === 2) ?  deferred.resolve(true) :  deferred.resolve(false));
+						},function(){
+							(($scope.user["Age"].value.toString().length === 2) ?  deferred.resolve(true) :  deferred.resolve(false));
+						})
+						return deferred.promise;
+					},
+					"HighSchoolGradYear" : function(){
+						var deferred = $q.defer();
+						(($scope.user["HighSchoolGradYear"].value.toString().length === 4) ?  deferred.resolve(true) :  deferred.resolve(false));
+						return deferred.promise;
+					}
+				},
+				callbacks: {
+					'before_next': function(){
+						
+					},
+					'getUserData': function(field){
+						return $scope.user[field].value
+					},
+					'isCBQ': function(step){
+						var obj = {};
+						for(var i=0; i < step.length; i++){
+							obj[step[i]] = {'is_cbq': $scope.fields[step[i]]['is_cbq']}
+						}
+						return obj // return value will be something like {'Age': {'is_cbq': true}}
+					},
+					'submit': function(callback){
+						var responsePromise = HttpService.getData("/angularjs-examples/json-test-data.jsp", $scope.user);
+						return responsePromise;
+					}
+				}
+			}
 			
 		}, function(data){
 			

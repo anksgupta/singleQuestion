@@ -157,16 +157,11 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQu
 	return {
         restrict: 'E',
         scope: {
-			order: '=',
-			cbq: '=criteria',
-			user: '=',
-			fields: '=',
-			validations: '=',
-			submit: '&'
+			singleQuestionOptions: '='
 		},
 		template: '<a href="javascript:;" id="backBtn" ng-click="SingleQuestion.showPrevious();">Back</a>' +
 				'<button id="nextBtn" ng-click="SingleQuestion.showNext();">Next</button>' +
-				'<button id="submitBtn" ng-click="submit()">Submit</button>' +
+				'<button id="submitBtn" ng-click="singleQuestionOptions.callbacks.submit()">Submit</button>' +
 				'<div class="rail"><div class="inner_rail"><div class="bar" ng-style="{\'width\': progressBarWidth + \'%\'}"></div></div></div>',
         link: function(scope, element, attrs){
 			var nextBtnElem = angular.element(document.getElementById('nextBtn')), 
@@ -176,9 +171,14 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQu
 					nextBtnElem.addClass('ng-hide');
 					if(SingleQuestion.current !== SingleQuestion.order.length - 1){
 						var step = SingleQuestion.order[SingleQuestion.current];
-						if(step.length > 1){
+						/** Next button should be shown:
+							- if multiple visible fields are present in Step
+							- else if single field is present and it is textbox
+							- else if current Step is valid
+						*/
+						if(SingleQuestion.getVisibleFieldObj().length > 1){
 							nextBtnElem.removeClass('ng-hide')
-						} else if((scope.fields[step[0]].type).toLowerCase() === "text") {
+						} else if((SingleQuestion.getVisibleFieldObj()[0].type).toLowerCase() === "text") {
 							nextBtnElem.removeClass('ng-hide')
 						} else{
 							SingleQuestion.isValidSingleQuestionStep().then(function(result){
@@ -200,11 +200,17 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQu
 						if(SingleQuestion.checkVisibility(currentStep[i]))
 							angular.element(document.getElementById('input-' + currentStep[i])).removeClass('ng-hide');
 					}
+				},
+				addWatch = function(fieldName){
+					scope.$watchCollection(function(){return SingleQuestion.user[fieldName]}, function(newValue, oldValue) {
+						if(newValue !== oldValue && SingleQuestion.getVisibleFieldObj().length === 1){
+							SingleQuestion.showNext()
+						}
+					});
 				};
 			
 			
 			scope.$on('currentUpdated', function(event, args){
-				scope.current = SingleQuestion.current;
 				// update current and validate next step
 				showNextBtn();
 				showHideStep(args ? args.elementToHide : []);
@@ -214,38 +220,16 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQu
 				scope.progressBarWidth = SingleQuestion.progressBarWidth
 			});
 			
-			scope.SingleQuestion = SingleQuestion.init({
-				order: scope.order,
-				cbq: eval(scope.cbq),
-				fieldValidations : scope.validations,
-				callback: {
-					'before_next': function(){
-						
-					},
-					'getUserData': function(field){
-						return scope.user[field].value
-					},
-					'isCBQ': function(step){
-						var obj = {};
-						for(var i=0; i < step.length; i++){
-							obj[step[i]] = {'is_cbq': scope.fields[step[i]]['is_cbq']}
-						}
-						return obj // return value will be something like {'Age': {'is_cbq': true}}
-					},
-					'submit': function(callback){
-						return scope.submit(callback)
-					}
-				}
-			});
+			scope.SingleQuestion = SingleQuestion.init(scope.singleQuestionOptions);
 			
 			for(var i=0;i < SingleQuestion.order.length; i++){
 				var fieldName = SingleQuestion.order[i];
-				if(fieldName.length === 1){
-					scope.$watchCollection(function(){return scope.user[fieldName]}, function(newValue, oldValue) {
-						if(newValue !== oldValue){
-							scope.SingleQuestion.showNext()
-						}
+				if(angular.isArray(fieldName)){
+					angular.forEach(fieldName, function(elem){
+						addWatch(elem)
 					});
+				} else {									 
+					addWatch(fieldName)
 				}
 			}
         }
