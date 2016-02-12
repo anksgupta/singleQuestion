@@ -159,10 +159,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', function($r
 				
 				//	if current field is CBQ field, call AJAX service that validates CBQ fields
 				if(self.CBQObj[fieldName]['is_cbq']){
-					//----- need to change CBQ criteria string logic
-					postDataObj['key'] = self.cbq[fieldName].k;
-					postDataObj[self.cbq[fieldName].p[0]] = self.getUserData(fieldName);
-					CBQService.handleCBQ('/CBQValidator.jsp',postDataObj)
+					CBQService.getCBQData(fieldName, self.cbq[fieldName])
 						.then(function(data){
 							if(data){
 								self.CBQObj[fieldName]['visible'] = true;

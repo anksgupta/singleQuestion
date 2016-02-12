@@ -7,7 +7,7 @@ mainApp.factory("HttpService", ['$http', '$q', function($http, $q){
 					deferred.resolve(data)	//Passing data to deferred's resolve function on successful completion
 				})
 				.error(function() {
-                    deferred.reject("Error occured while fetching ajax response")	//Sending an error message in case of failure
+                    deferred.reject({16750611: true, 16750612: true})	//Sending an error message in case of failure
                 });
 			return deferred.promise	//Returning the promise object
 		}

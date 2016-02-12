@@ -5,9 +5,10 @@ mainApp.directive("radioInTable", function(){
 		scope: {
 			fieldname: '=',
 			options: '=',
-			user: '='
+			user: '=',
+			field: '='
 		},
-		template: '<div ng-click="updateModel(fieldname, option.value)" ng-class="{myclass: option.value == user[fieldname].value}" ng-repeat="option in options" ng-bind-html="option.label | preseveHtml"></div>',
+		template: '<div ng-click="updateModel(fieldname, option.value)" ng-class="{myclass: option.value == user[fieldname].value}" ng-repeat="option in options | shouldShow:field.is_cbq">{{option.label}}</div>',
 		link: function(scope, element, attrs){
 			scope.updateModel = function(fieldName, value) {
 				if(scope.user[fieldName].value == value)
@@ -137,9 +138,7 @@ mainApp.directive('cbq', ['CBQService', function(CBQService){
 			scope.postDataObj = {};
 			angular.forEach(scope.cbqObj[scope.fieldname].p, function(parent){
 				scope.$watchCollection(function(){return scope.user[parent]}, function(newValue, oldValue) {
-					scope.postDataObj['key'] = scope.cbqObj[scope.fieldname].k;
-					scope.postDataObj[scope.cbqObj[scope.fieldname].p] = newValue.value;
-					CBQService.handleCBQ(scope.postDataObj)
+					CBQService.getCBQData(scope.fieldname, scope.cbqObj[scope.fieldname])
 						.then(function(data){
 							data ? element.removeClass('ng-hide') : element.addClass('ng-hide');
 						}, function(data){

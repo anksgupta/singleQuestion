@@ -23,7 +23,7 @@
 							<div ng-switch-when="RadioInTable">
 								<div class="animate ng-hide" id="input-{{field.name}}">
 									<p>{{field.name}} item is : {{user[field.name].value}}</p>
-									<radio-in-table fieldname="field.name" options="field.options" user="user"/>
+									<radio-in-table fieldname="field.name" options="field.options" user="user" field="field"/>
 								</div>	
 							</div>
 							<div ng-switch-when="CustomSelect">

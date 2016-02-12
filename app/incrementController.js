@@ -1,10 +1,13 @@
-mainApp.controller('incrementController', ['$scope', 'HttpService', function($scope, HttpService){
+mainApp.controller('incrementController', ['$scope', 'HttpService', 'CBQService', function($scope, HttpService, CBQService){
 	HttpService.getData('postqual.json')
 		.then(function(data){
 			$scope.user = {};
-			
 			$scope.json = data;
-			$scope.fields = data.form.fields;
+			CBQService.setConfig({
+				fields: data.form.fields,
+				getUserData: getUserData
+			});
+			$scope.fields = CBQService.getFields();
 			$scope.order = data.form.order;
 			$scope.criteria = eval(data.form.cbq);
 			
@@ -18,6 +21,9 @@ mainApp.controller('incrementController', ['$scope', 'HttpService', function($sc
 			$scope.click = function(){
 				var responsePromise = $http.post("/angularjs-examples/json-test-data.jsp", $scope.user, {});
 			};
+			function getUserData(field){
+				return $scope.user[field].value
+			}
 			
 		}, function(data){
 			

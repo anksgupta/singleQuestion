@@ -18,7 +18,7 @@
     },
     "form": {
         "name": "prequal",
-        "cbq": "({'Age':{o:1080,k:82612360,p:['AreaOfInterest_DisplayName','AreaOfInterest'],s:false,e:true,r:true},'DegreeStartTimeframe':{o:1120,k:11710103,p:['AreaOfInterest'],s:false,e:false,r:true}})",
+        "cbq": "({'Age':{o:1080,k:82612360,p:['AreaOfInterest_DisplayName','ProgramsOfInterestType'],s:false,e:true,r:true},'DegreeStartTimeframe':{o:1120,k:11710103,p:['ProgramsOfInterestType'],s:false,e:false,r:true},'DegreeStartTimeframe1':{o:1010,r:true,a:[{i:1,k:16750611,p:['ProgramsOfInterestType','Age'],e:false},{i:2,k:16750612,p:['ProgramsOfInterestType'],e:false}]}})",
         "tcpa": {
             "required": false
         },
@@ -134,7 +134,7 @@
                 "type": "Text",
                 "label": "What is your age?",
                 "is_cbq": false,
-                "value": "",
+                "value": 25,
                 "is_hidden": false,
                 "is_required": true,
                 "is_valid": true,

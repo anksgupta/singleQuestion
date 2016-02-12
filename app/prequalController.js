@@ -1,11 +1,22 @@
-mainApp.controller('prequalController', ['$scope', '$q', 'HttpService', 'SingleQuestion', '$rootScope', function($scope, $q, HttpService, SingleQuestion, $rootScope){
+mainApp.controller('prequalController', ['$scope', '$q', '$rootScope', 'HttpService', 'SingleQuestion', 'CBQService', function($scope, $q, $rootScope, HttpService, SingleQuestion, CBQService){
 	HttpService.getData('data.json')
 		.then(function(data){
 			$scope.user = {};
 			$scope.json = data;
 			var form = $scope.json.form;
-			$scope.fields = form.fields;
+			
+			// Set CBQ service configurations
+			CBQService.setConfig({
+				fields: form.fields,
+				getUserData: getUserData
+			});
+			
+			$scope.fields = CBQService.getFields();
 			$scope.dataLoaded = true;
+			
+			function getUserData(field){
+				return $scope.user[field].value
+			}
 			
 			// Set prepopulated field values in User object
 			for(var key in $scope.fields){
@@ -42,9 +53,7 @@ mainApp.controller('prequalController', ['$scope', '$q', 'HttpService', 'SingleQ
 					'before_next': function(){
 						
 					},
-					'getUserData': function(field){
-						return $scope.user[field].value
-					},
+					'getUserData': getUserData,
 					'isCBQ': function(step){
 						var obj = {};
 						for(var i=0; i < step.length; i++){
