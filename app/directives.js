@@ -8,7 +8,7 @@ mainApp.directive("radioInTable", function(){
 			user: '=',
 			field: '='
 		},
-		template: '<div ng-click="updateModel(fieldname, option.value)" ng-class="{myclass: option.value == user[fieldname].value}" ng-repeat="option in options | shouldShow:field.is_cbq">{{option.label}}</div>',
+		template: '<div ng-click="updateModel(fieldname, option.value)" ng-class="{myclass: option.value == user[fieldname].value}" ng-repeat="option in options">{{option.label}}</div>',
 		link: function(scope, element, attrs){
 			scope.updateModel = function(fieldName, value) {
 				if(scope.user[fieldName].value == value)

@@ -74,10 +74,10 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', function($r
 		},
 		showNext: function(){
 			var promise = [], self = this, CBQObj = {};
-			if(typeof this.callbacks['before_next'] === 'function')
-				this.callbacks['before_next'].call(this)
 			
 			this.isValidSingleQuestionStep().then(function(result){
+				if(typeof this.callbacks['before_next'] === 'function')
+					this.callbacks['before_next'].call(this)
 				if(result){
 				// If current step is not the last step, then only proceed further
 					if(self.current !== (self.order.length - 1)){

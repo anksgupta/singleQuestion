@@ -17,7 +17,7 @@
 							<div ng-switch-when="Select">
 								<div class="animate ng-hide" id="input-{{field.name}}">
 									<p>{{field.name}} item is : {{user[field.name].value}}</p>
-									<select ng-change="next()" name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"></select>
+									<select name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"></select>
 								</div>
 							</div>
 							<div ng-switch-when="RadioInTable">

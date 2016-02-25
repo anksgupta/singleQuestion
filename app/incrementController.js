@@ -3,7 +3,8 @@ mainApp.controller('incrementController', ['$scope', 'HttpService', 'CBQService'
 		.then(function(data){
 			$scope.user = {};
 			$scope.json = data;
-			CBQService.setConfig({
+			// Set CBQ service data
+			CBQService.setCBQServiceData({
 				fields: data.form.fields,
 				getUserData: getUserData
 			});

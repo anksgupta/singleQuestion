@@ -1,11 +1,9 @@
 mainApp.factory("CBQService", ['HttpService', '$q', function(HttpService, $q){
-	var CBQServiceData = {};
+	var CBQServiceData = {}, fieldsObjCopy;
 	return {
-		setConfig: function(scopeFieldObj){
+		setCBQServiceData: function(scopeFieldObj){
 			CBQServiceData = scopeFieldObj;
-		},
-		getConfig: function(criteriaObj){
-			
+			fieldsObjCopy = angular.copy(CBQServiceData.fields);
 		},
 		isCBA: function(criteriaObj){
 			return (typeof criteriaObj.a !== "undefined");
@@ -36,14 +34,14 @@ mainApp.factory("CBQService", ['HttpService', '$q', function(HttpService, $q){
 			},function(data){
 				if(isCBA){
 					// The data for CBA will be a JSON object, e.g : {101312 : true, 101314 : false}
-					for(var index=0; index < criteriaObj.a.length; index++){
-						if(data[criteriaObj.a[index].k]){
+					angular.extend(CBQServiceData.fields[fieldName].options, fieldsObjCopy[fieldName].options)
+					for(var index=(criteriaObj.a.length -1); index >= 0; index--){
+						if(!data[criteriaObj.a[index].k]){
 							// var defaultOptionCount = /select/i.test($elem.find('option:eq(0)').val()) ? 1 : 0;
 							var optionIndex = parseInt(Math.log(criteriaObj.a[index].i) / Math.log(2));// + defaultOptionCount
 							// this.i is always a multiple of 2, so to derive x we can do e.g 2^x = 4. Hence using logarithms
-							CBQServiceData.fields[fieldName].options[optionIndex].hidden = true;
+							CBQServiceData.fields[fieldName].options.splice(optionIndex, 1);
 							hiddenOptionsCount++;
-							console.log(CBQServiceData.fields[fieldName].options[optionIndex])
 						}
 					}
 					(fieldsCount > hiddenOptionsCount) ? deferred.resolve(true) : deferred.resolve(false);

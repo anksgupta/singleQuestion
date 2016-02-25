@@ -5,8 +5,8 @@ mainApp.controller('prequalController', ['$scope', '$q', '$rootScope', 'HttpServ
 			$scope.json = data;
 			var form = $scope.json.form;
 			
-			// Set CBQ service configurations
-			CBQService.setConfig({
+			// Set CBQ service data
+			CBQService.setCBQServiceData({
 				fields: form.fields,
 				getUserData: getUserData
 			});
