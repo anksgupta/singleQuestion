@@ -11,20 +11,30 @@
 		<div id="header" class="row"></div>
 		<div id="body" class="row" ng-controller="incrementController">
 			<form id="myForm" name="myForm">
-				<div ng-repeat="elem in order">
-					<div ng-if="fields[elem].type == 'Select'">
-						<div class="animate" id="input-{{fields[elem].name}}" fieldname="elem" field="fields[elem]" user="user" cbq-obj="criteria" directive-if="{'cbq': 'fields[elem].is_cbq === true'}" cbq>
-							<p>selected item is : {{user[fields[elem].name].value}}</p>
-							<select name="{{fields[elem].name}}" ng-model="user[fields[elem].name].value" ng-options="option.value as option.label for option in fields[elem].options"></select>
+				<div ng-if="dataLoaded">
+					<div ng-repeat="elem in order" ng-init="field = fields[elem]">
+						<div ng-switch="field.type">
+							<div ng-switch-when="Select">
+								<div class="" id="input-{{field.name}}" fieldname="elem" field="field" user="user" cbq-obj="criteria" directive-if="{'cbq': 'field.is_cbq === true'}" cbq>
+									<p>selected item is : {{user[field.name].value}}</p>
+									<select name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"></select>
+								</div>
+							</div>
+							<div ng-switch-when="RadioInTable">
+								<div class="" id="input-{{field.name}}" fieldname="elem" field="field" user="user" cbq-obj="criteria" directive-if="{'cbq': 'field.is_cbq === true'}" cbq>
+									<p>selected item is : {{user[field.name].value}}</p>
+									<radio-in-table user="user" field="field"></radio-in-table>
+								</div>	
+							</div>
+							<div ng-switch-when="DateInput">
+								<div class="" id="input-{{field.name}}" fieldname="elem" field="field" user="user" cbq-obj="criteria" directive-if="{'cbq': 'field.is_cbq === true'}" cbq>
+									<p>selected item is : {{user[field.name].value}}</p>
+									<radio-in-table user="user" field="field"></radio-in-table>
+								</div>	
+							</div>
 						</div>
 					</div>
-					<div ng-if="fields[elem].type == 'RadioInTable'">
-						<div class="animate" id="input-{{fields[elem].name}}" fieldname="elem" field="fields[elem]" user="user" cbq-obj="criteria" directive-if="{'cbq': 'fields[elem].is_cbq === true'}" cbq>
-							<p>selected item is : {{user[fields[elem].name].value}}</p>
-							<radio-in-table fieldname="fields[elem].name" options="fields[elem].options" user="user"/>
-						</div>	
-					</div>				
-				</div>
+				</div>	
 				<div>dirty: {{myForm.$dirty}}</div>
 				<div>pristine: {{myForm.$pristine}}</div>
 				<div>valid: {{myForm.$valid}}</div>

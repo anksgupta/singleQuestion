@@ -18,9 +18,10 @@
     },
     "form": {
         "name": "prequal",
-        "cbq": "({'Age':{o:1080,k:82612360,p:['AreaOfInterest_DisplayName','ProgramsOfInterestType'],s:false,e:true,r:true},'DegreeStartTimeframe':{o:1120,k:11710103,p:['ProgramsOfInterestType'],s:false,e:false,r:true},'DegreeStartTimeframe1':{o:1010,r:true,a:[{i:1,k:16750611,p:['ProgramsOfInterestType','Age'],e:false},{i:2,k:16750612,p:['ProgramsOfInterestType'],e:false}]}})",
+        "cbq": "({'Age':{o:1080,k:82612360,p:['AreaOfInterest_DisplayName','ProgramsOfInterestType'],s:false,e:true,r:true},'DegreeStartTimeframe1':{o:1120,k:11710103,p:['ProgramsOfInterestType'],s:false,e:false,r:true},'DegreeStartTimeframe':{o:1010,r:true,a:[{i:1,k:16750611,p:['ProgramsOfInterestType','Age'],e:false},{i:2,k:16750612,p:['ProgramsOfInterestType'],e:false}]}})",
         "tcpa": {
-            "required": false
+            "required": true,
+			"type": "plaintext"
         },
         "fields": {
             "ProgramsOfInterestType": {
@@ -614,166 +615,6 @@
                 "is_valid": false,
                 "error_message": "Required field"
             },
-            "A127": {
-                "name": "A127",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "A128": {
-                "name": "A128",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "CLK": {
-                "name": "CLK",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "0",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "AffiliateKey": {
-                "name": "AffiliateKey",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "0",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "TrafficSource": {
-                "name": "TrafficSource",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "22",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "LeadSiteURL": {
-                "name": "LeadSiteURL",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "http://www.worldwidelearn.com/index.do?VKEY=10132&NS_minifyfiles=false&websiteDomain=www.worldwidelearn.com&NS_leadid=false&S_ogd=eduformsone.com.jbossdev.dms.quinstreet.net&NS_namespace=singlepage-mobile&NS_mobilenamespace=singlepage-mobile&",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "SourceProgramKey": {
-                "name": "SourceProgramKey",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "0",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "CreativeId": {
-                "name": "CreativeId",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "0",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "IsBrandedEmailCreative": {
-                "name": "IsBrandedEmailCreative",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "N",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "AreaID": {
-                "name": "AreaID",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "0",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "DeviceType": {
-                "name": "DeviceType",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "Desktop",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "SiteVersion": {
-                "name": "SiteVersion",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "FormsOne",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "IPAddress": {
-                "name": "IPAddress",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "172.16.156.107",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "PubWebSiteName": {
-                "name": "PubWebSiteName",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "www.worldwidelearn.com",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "filterAllPOI": {
-                "name": "filterAllPOI",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "false",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "WebSiteName": {
-                "name": "WebSiteName",
-                "type": "Hidden",
-                "is_cbq": false,
-                "value": "WWW.GUIDETOHIGHERED.COM",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
             "leadid_token": {
                 "name": "leadid_token",
                 "type": "Hidden",
@@ -785,45 +626,56 @@
                 "is_valid": true,
                 "error_message": ""
             },
-            "ApplyLeadSplitMax": {
-                "name": "ApplyLeadSplitMax",
-                "type": "Hidden",
-                "label": "",
-                "is_cbq": false,
-                "value": "False",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "LeadProcessDelayMins": {
-                "name": "LeadProcessDelayMins",
-                "type": "Hidden",
-                "label": "",
-                "is_cbq": false,
-                "value": "7",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            },
-            "WorkPhoneConsent": {
-                "name": "WorkPhoneConsent",
-                "type": "Hidden",
-                "label": "",
-                "is_cbq": false,
-                "value": "BLANK",
-                "is_hidden": true,
-                "is_required": false,
-                "is_valid": true,
-                "error_message": ""
-            }
+			"HP": {
+				"name": "HP",
+				"type": "PhoneFormat",
+				"label": "Direct Phone:",
+				"is_cbq": false,
+				"is_single_col": false,
+				"value": {
+					"HP_AREA": "650",
+					"HP_PREFIX": "578",
+					"HP_NUMBER": "6496"
+				},
+				"is_hidden": false,
+				"is_required": true,
+				"is_valid": true,
+				"error_message": ""
+			},
+			"WP": {
+				"name": "WP",
+				"type": "PhoneFormat",
+				"label": "Secondary Phone:",
+				"is_cbq": false,
+				"is_single_col": false,
+				"value": {
+					"WP_AREA": "123",
+					"WP_PREFIX": "456",
+					"WP_NUMBER": "7890"
+				},
+				"is_hidden": false,
+				"is_required": false,
+				"is_valid": true,
+				"error_message": ""
+			},
+			"HomePhoneConsent": {
+				"name": "HomePhoneConsent",
+				"type": "Text",
+				"label": "By submitting these number(s), you agree that a representative of Kaplan University and\/or QuinStreet Education Network can contact you at these number(s) - potentially using automated technology (including Text\/SMS messages) or a prerecorded message. You are not required to provide consent to purchase educational services.",
+				"is_cbq": false,
+				"value": "",
+				"is_hidden": false,
+				"is_required": false,
+				"is_valid": true,
+				"error_message": ""
+			}
         },
         "order": [
             ["ProgramsOfInterestType"],
             ["DegreeStartTimeframe", "Age"],
             ["HighSchoolGradYear", "EducationLevel"],
-            ["Military", "Citizenship"]
+            ["Military", "Citizenship"],
+			["HP", "WP", "HomePhoneConsent"]
         ],
         "is_valid": false,
         "is_submitted": false

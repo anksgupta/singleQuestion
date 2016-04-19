@@ -8,9 +8,6 @@ mainApp.factory("CBQService", ['HttpService', '$q', function(HttpService, $q){
 		isCBA: function(criteriaObj){
 			return (typeof criteriaObj.a !== "undefined");
 		},
-		getFields: function(){
-			return CBQServiceData.fields;
-		},
 		getCBQData: function(fieldName, criteriaObj){
 			var deferred = $q.defer(), postDataObj = {}, keys = [], parentArr = [], isCBA = this.isCBA(criteriaObj), 
 				fieldsCount = CBQServiceData.fields[fieldName].options.length, hiddenOptionsCount = 0;

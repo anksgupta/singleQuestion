@@ -12,41 +12,71 @@
 		<div id="body" class="row" ng-controller="prequalController">
 			<form id="myForm" name="myForm">
 				<div ng-if="dataLoaded">
-					<div ng-repeat="field in fields">
+					<div ng-repeat="elem in order" ng-init="field = fields[elem]">
 						<div ng-switch="field.type">
 							<div ng-switch-when="Select">
 								<div class="animate ng-hide" id="input-{{field.name}}">
-									<p>{{field.name}} item is : {{user[field.name].value}}</p>
-									<select name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"></select>
+									<div class="question">
+										<p>{{field.name}} item is : {{user[field.name].value}}</p>
+									</div>
+									<div class="answer">
+										<select name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"></select>
+									</div>
+									<div class="error"></div>
 								</div>
 							</div>
 							<div ng-switch-when="RadioInTable">
 								<div class="animate ng-hide" id="input-{{field.name}}">
-									<p>{{field.name}} item is : {{user[field.name].value}}</p>
-									<radio-in-table fieldname="field.name" options="field.options" user="user" field="field"/>
+									<div class="question">
+										<p>{{field.name}} item is : {{user[field.name].value}}</p>
+									</div>
+									<div class="answer">
+										<radio-in-table user="user" field="field"></radio-in-table>
+									</div>
+									<div class="error"></div>
 								</div>	
 							</div>
 							<div ng-switch-when="CustomSelect">
 								<div class="animate ng-hide" id="input-{{field.name}}">
-									<p>{{field.name}} item is : {{user[field.name].value}}</p>
-									<custom-Select fieldname="field.name" options="field.options" user="user"/>
+									<div class="question">
+										<p>{{field.name}} item is : {{user[field.name].value}}</p>
+									</div>
+									<div class="answer">
+										<custom-select field="field" user="user"></custom-select>
+									</div>
+									<div class="error"></div>
 								</div>	
 							</div>
 							<div ng-switch-when="Text">
 								<div class="animate ng-hide" id="input-{{field.name}}">
-									<p>{{field.name}} item is : {{user[field.name].value}}</p>
-									<div ng-switch="field.name">
-										<input ng-switch-when="Age" max="99" type="number" on-change name="{{field.name}}" ng-model="user[field.name].value"/>
-										<input ng-switch-when="HighSchoolGradYear" max="2015" type="number" on-change name="{{field.name}}" ng-model="user[field.name].value"/>
-										<input ng-switch-default on-change name="{{field.name}}" ng-model="user[field.name].value"/>
+									<div class="question">
+										<p>{{field.name}} item is : {{user[field.name].value}}</p>
+									</div>
+									<div class="answer">
+										<div ng-switch="field.name">
+											<input ng-switch-when="Age" max="99" type="number" name="{{field.name}}" ng-model="user[field.name].value"/>
+											<home-phone-consent class="ng-hide" ng-switch-when="HomePhoneConsent" user="user" field="field"></home-phone-consent>
+											<input ng-switch-when="HighSchoolGradYear" max="2016" type="number" name="{{field.name}}" ng-model="user[field.name].value"/>
+											<input ng-switch-default name="{{field.name}}" ng-model="user[field.name].value"/>
+										</div>
+									</div>
+								</div>	
+							</div>
+							<div ng-switch-when="PhoneFormat">
+								<div class="animate ng-hide" id="input-{{field.name}}">
+									<div class="question">
+										<p>{{field.name}} item is : {{user[field.name].value}}</p>
+									</div>
+									<div class="answer">
+										<phone-field user="user" field="field"></phone-field>
 									</div>
 								</div>	
 							</div>					
 						</div>
 					</div>
-					<div>dirty: {{myForm.$dirty}}</div>
-					<div>pristine: {{myForm.$pristine}}</div>
-					<div>valid: {{myForm.$valid}}</div>
+					<div>form dirty: {{myForm.$dirty}}</div>
+					<div>form pristine: {{myForm.$pristine}}</div>
+					<div>form valid: {{myForm.$valid}}</div>
 					
 					<single-question-directive single-question-options="singleQuestionOptions"/>
 				</div>
@@ -66,8 +96,10 @@
 	<script charset="UTF-8" src="app/app.js"></script>
 	<script charset="UTF-8" src="app/prequalController.js"></script>
 	<script charset="UTF-8" src="app/HttpService.js"></script>
+	<script charset="UTF-8" src="app/AnimationService.js"></script>
 	<script charset="UTF-8" src="app/SinglequestionService.js"></script>
 	<script charset="UTF-8" src="app/CBQService.js"></script>
 	<script charset="UTF-8" src="app/directives.js"></script>
+	<script charset="UTF-8" src="app/tcpaService.js"></script>
 	<script charset="UTF-8" src="app/filters.js"></script>
 </body>

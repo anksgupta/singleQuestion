@@ -1,30 +1,48 @@
 mainApp.controller('prequalController', ['$scope', '$q', '$rootScope', 'HttpService', 'SingleQuestion', 'CBQService', function($scope, $q, $rootScope, HttpService, SingleQuestion, CBQService){
 	HttpService.getData('data.json')
 		.then(function(data){
+			$scope.order = [].concat.apply([], data.form.order);
+		
 			$scope.user = {};
-			$scope.json = data;
-			var form = $scope.json.form;
+			$scope.fields = {};
+			var form = data.form;
+			
+			// Set prepopulated field values in User object
+			for(var key in data.form.fields){
+				var field = data.form.fields[key];
+				switch(field.type){
+					case 'Hidden': case 'Submit':
+						break
+					default:
+						$scope.fields[field.name] = field;
+						switch(field.name){
+							case 'HP': case 'WP':
+								for(var phoneField in field.value){
+									$scope.user[phoneField] = {};
+									if(field.value[phoneField]){
+										$scope.user[phoneField].value = field.value[phoneField]
+									}
+								}
+								break
+							default:
+								$scope.user[field.name] = {};
+								if(field.value){
+									$scope.user[field.name].value = field.value
+								}
+						}
+				}
+			}
 			
 			// Set CBQ service data
 			CBQService.setCBQServiceData({
-				fields: form.fields,
+				fields: $scope.fields,
 				getUserData: getUserData
 			});
 			
-			$scope.fields = CBQService.getFields();
 			$scope.dataLoaded = true;
 			
 			function getUserData(field){
 				return $scope.user[field].value
-			}
-			
-			// Set prepopulated field values in User object
-			for(var key in $scope.fields){
-				var field = $scope.fields[key];
-				$scope.user[field.name] = {};
-				if(field.value){
-					$scope.user[field.name].value = field.value;
-				}
 			}
 			
 			$scope.singleQuestionOptions = {

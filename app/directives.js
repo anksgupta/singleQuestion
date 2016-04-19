@@ -1,14 +1,73 @@
+// Home phone directive
+mainApp.directive("phoneField", ['TcpaService', function(TcpaService){
+	return {
+		restrict: 'E',
+		replace: true,
+		scope: {
+			user: '=',
+			field: '='
+		},
+		template: '<div ng-switch="field.is_single_col">' +
+					'<input ng-switch-when="true" value="" name="{{field.name}}" type="tel" maxlength="" placeholder="" ng-model="phoneNumber">' +
+					'<div ng-switch-when="false">' +
+						'<input name="{{field.name}}_AREA" type="tel" maxlength="3" placeholder="" ng-model="area.value">' +
+						'<input name="{{field.name}}_PREFIX" type="tel" maxlength="3" placeholder="" ng-model="prefix.value">' +
+						'<input name="{{field.name}}_NUMBER" type="tel" maxlength="4" placeholder="" ng-model="number.value">' +
+					'</div>' +
+			    '</div>',
+		link: function(scope, element, attrs){
+			if(scope.field.is_single_col){
+				scope.phoneNumber = scope.user[scope.field.name + "_AREA"].value + 
+									scope.user[scope.field.name + "_PREFIX"].value +
+									scope.user[scope.field.name + "_NUMBER"].value;
+									
+				scope.$watch(phoneNumber, function(newValue, oldValue) {
+						TcpaService.handleTCPA(scope.phoneNumber, true);
+				});
+			}else {
+				scope.area = scope.user[scope.field.name + "_AREA"];
+				scope.prefix = scope.user[scope.field.name + "_PREFIX"];
+				scope.number = scope.user[scope.field.name + "_NUMBER"];
+				scope.$watchGroup(['area.value', 'prefix.value', 'number.value'], function(newValue, oldValue) {
+						var phoneNumber = scope.area.value + "" + scope.prefix.value + "" + scope.number.value;
+						TcpaService.handleTCPA(phoneNumber, true);
+				});
+			}
+		}
+	}
+}]);
+
+// TCPA directive
+mainApp.directive("homePhoneConsent", function(){
+	return {
+		restrict: 'E',
+		scope: {
+			user: '=',
+			field: '='
+		},
+		template: '<label class="prompt" for="leadid_tcpa_disclosure">' +
+						'<span class="text">{{field.label}}</span>' +
+					'</label>' +
+					'<div class="ng-hide clear">' +
+						'<input id="leadid_tcpa_disclosure" value="{{field.value}}" name="HomePhoneConsent" type="text">' +
+					'</div>',
+		link: function(scope, element, attrs){
+			scope.$on('ShowPhoneConsent', function(event, args){
+				args.showConsent ? element.removeClass('ng-hide') : element.addClass('ng-hide');
+			})
+		}
+	}
+});
+
 // Radio button directive
 mainApp.directive("radioInTable", function(){
 	return {
 		restrict: 'E',
 		scope: {
-			fieldname: '=',
-			options: '=',
 			user: '=',
 			field: '='
 		},
-		template: '<div ng-click="updateModel(fieldname, option.value)" ng-class="{myclass: option.value == user[fieldname].value}" ng-repeat="option in options">{{option.label}}</div>',
+		template: '<div ng-click="updateModel(field.name, option.value)" ng-class="{myclass: option.value == user[field.name].value}" ng-repeat="option in field.options">{{option.label}}</div>',
 		link: function(scope, element, attrs){
 			scope.updateModel = function(fieldName, value) {
 				if(scope.user[fieldName].value == value)
@@ -24,22 +83,21 @@ mainApp.directive("customSelect", function(){
 	return {
 		restrict: 'E',
 		scope: {
-			fieldname: '=',
-			options: '=',
-			user: '='
+			user: '=',
+			field: '='
 		},
 		template: '<div class="select-container">' + 
-					'<span class="selected-text">{{user[fieldname].value}}</span>' + 
-					'<ul name="{{fieldname}}" ng-model="user[fieldname]">'+
-						'<li ng-repeat="option in options" value="{{option.value}}" ng-click="updateModel(option.value)" ng-class="{myclass: option.value == user[fieldname]}">{{option.label}}</li>'+
+					'<span class="selected-text">{{user[field.name].value}}</span>' + 
+					'<ul name="{{field.name}}" ng-model="user[field.name]">'+
+						'<li ng-repeat="option in field.options" value="{{option.value}}" ng-click="updateModel(option.value)" ng-class="{myclass: option.value == user[field.name]}">{{option.label}}</li>'+
 					'</ul>'+
-					'<select name="{{fieldname}}" ng-model="user[fieldname]" ng-options="option.value as option.label for option in options"></select>' + 
+					'<select name="{{field.name}}" ng-model="user[field.name]" ng-options="option.value as option.label for option in field.options"></select>' + 
 				'</div>',
 		controller: ['$scope', function($scope) {
 			
 	    }],
 	    link: function(scope, element, attrs) {
-			var fieldName = scope.fieldname;
+			var fieldName = scope.field.name;
 			scope.updateModel = function(value) {
 				if(scope.user[fieldName].value == value)
 					scope.user[fieldName].unchanged = new Date().getTime()  // flag to handle a case in which user clicks on the same option and shownext should be called
@@ -47,24 +105,6 @@ mainApp.directive("customSelect", function(){
             }
 	    }
 	}
-});
-
-// Handle Textbox change event on blur
-mainApp.directive('onChange', function() {
-    return {
-        restrict: 'A',
-        scope:true,
-        link: function(scope, element, attrs){
-            element.bind('blur', function() {
-                var currentValue = element.val();                
-                if(scope.onChange !== currentValue){
-                    scope.$apply(function(){
-                        scope.onChange = currentValue;
-                    });
-                }
-            });
-        }
-    }      
 });
 
 mainApp.directive('directiveIf', ['$compile',
@@ -152,7 +192,7 @@ mainApp.directive('cbq', ['CBQService', function(CBQService){
 }]);
 
 // SingleQuestion directive
-mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQuestion) {
+mainApp.directive('singleQuestionDirective',['SingleQuestion', 'AnimationService', function(SingleQuestion, AnimationService) {
 	return {
         restrict: 'E',
         scope: {
@@ -192,21 +232,27 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQu
 					if(elementToHide.length > 0){
 						for(var i = 0; i < elementToHide.length; i++){
 							angular.element(document.getElementById('input-' + elementToHide[i])).addClass('ng-hide');
+							AnimationService.fadeOut(document.getElementById('input-' + elementToHide[i]), {
+								duration: 1000,
+								complete: function() {
+									console.log('fadeOut');
+								}
+							});
 						}
 					}
 					// show fields in current order
 					for(var i = 0; i < currentStep.length; i++){
-						if(SingleQuestion.checkVisibility(currentStep[i]))
+						if(SingleQuestion.checkVisibility(currentStep[i])) {
 							angular.element(document.getElementById('input-' + currentStep[i])).removeClass('ng-hide');
-					}
-				},
-				addWatch = function(fieldName){
-					scope.$watchCollection(function(){return SingleQuestion.user[fieldName]}, function(newValue, oldValue) {
-						if(newValue !== oldValue && SingleQuestion.getVisibleFieldObj().length === 1){
-							SingleQuestion.showNext()
+							AnimationService.fadeIn(document.getElementById('input-' + currentStep[i]), {
+								duration: 1000,
+								complete: function() {
+									console.log('fadeIn');
+								}
+							});
 						}
-					});
-				};
+					}
+				}
 			
 			
 			scope.$on('currentUpdated', function(event, args){
@@ -222,14 +268,15 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', function(SingleQu
 			scope.SingleQuestion = SingleQuestion.init(scope.singleQuestionOptions);
 			
 			for(var i=0;i < SingleQuestion.order.length; i++){
-				var fieldName = SingleQuestion.order[i];
-				if(angular.isArray(fieldName)){
-					angular.forEach(fieldName, function(elem){
-						addWatch(elem)
+				var step = SingleQuestion.order[i];
+				for(var j=0;j < step.length; j++){
+					scope.$watchCollection(function(){return SingleQuestion.user[step[j]]}, function(newValue, oldValue) {
+						if(newValue !== oldValue && SingleQuestion.getVisibleFieldObj().length === 1){
+							// if current order has only one field visible then call ShowNext on change of model update
+							SingleQuestion.showNext()
+						}
 					});
-				} else {									 
-					addWatch(fieldName)
-				}
+				}			
 			}
         }
     }      

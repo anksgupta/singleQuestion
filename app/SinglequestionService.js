@@ -36,7 +36,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', function($r
 		isValidField: function(fieldName){	// method to validate individual field, fieldName is passed as parameter
 			var result = true, deferred = $q.defer();
 			
-			if(!this.getUserData(fieldName)) {		// check if field value is empty
+			if(!this.getUserData(fieldName)) {	// check if field value is empty
 				if(this.CBQObj[fieldName] && this.CBQObj[fieldName].is_cbq) {		// check if field is CBQ
 					if(this.CBQObj[fieldName].visible){		// CBQ field is VISIBLE then only it is considered as NOT valid 
 						result = false;
@@ -76,8 +76,8 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', function($r
 			var promise = [], self = this, CBQObj = {};
 			
 			this.isValidSingleQuestionStep().then(function(result){
-				if(typeof this.callbacks['before_next'] === 'function')
-					this.callbacks['before_next'].call(this)
+				if(typeof self.callbacks['before_next'] === 'function')
+					self.callbacks['before_next'].call(self)
 				if(result){
 				// If current step is not the last step, then only proceed further
 					if(self.current !== (self.order.length - 1)){
