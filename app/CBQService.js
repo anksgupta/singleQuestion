@@ -8,13 +8,13 @@ mainApp.factory("CBQService", ['HttpService', '$q', function(HttpService, $q){
 		isCBA: function(criteriaObj){
 			return (typeof criteriaObj.a !== "undefined");
 		},
-		getCBQData: function(fieldName, criteriaObj){
-			var deferred = $q.defer(), postDataObj = {}, keys = [], parentArr = [], isCBA = this.isCBA(criteriaObj), 
-				fieldsCount = CBQServiceData.fields[fieldName].options.length, hiddenOptionsCount = 0;
+		getCBQData: function(fieldName){
+			var deferred = $q.defer(), postDataObj = {}, keys = [], parentArr = [], criteriaObj = CBQServiceData.cbq[fieldName],
+				isCBA = this.isCBA(criteriaObj), fieldsCount = CBQServiceData.fields[fieldName].options.length, hiddenOptionsCount = 0;
 			if(isCBA) {
-				for(var i=0; i < criteriaObj.a.length; i++){
+				for(var i = 0; i < criteriaObj.a.length; i++){
 					keys.push(criteriaObj.a[i].k);
-					for(var j=0; j < criteriaObj.a[i].p.length; j++){
+					for(var j = 0; j < criteriaObj.a[i].p.length; j++){
 						if(parentArr.indexOf(criteriaObj.a[i].p[j]) === -1){
 							parentArr.push(criteriaObj.a[i].p[j]);
 							postDataObj[criteriaObj.a[i].p[j]] = CBQServiceData.getUserData(criteriaObj.a[i].p[j])

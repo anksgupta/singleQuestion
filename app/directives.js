@@ -1,5 +1,33 @@
+// Directive which dynamically creates form fields based on the input
+mainApp.directive('generateField', ['myConfig', '$compile', function(myConfig, $compile) {
+		return {
+			restrict: 'E',
+			scope: {
+				fieldType: '@',
+				user: '=',
+				field: '='
+			},
+			link: function (scope, element, attrs) {
+				var template = "<" + myConfig.templateConfig[scope.fieldType] + " user='user' field='field'></" + myConfig.templateConfig[scope.fieldType] + ">";
+				element.append($compile(template)(scope))
+			}
+		}
+}]);
+
+// Directive which checks if inner content has loaded
+mainApp.directive('elemReady', [function() {
+		return {
+			restrict: 'A',
+			link: function(scope, elem, attrs) {    
+				elem.ready(function(){
+					scope.$emit('innerContentLoaded')
+				})
+			}
+		}
+}])
+
 // Home phone directive
-mainApp.directive("phoneField", ['TcpaService', function(TcpaService){
+mainApp.directive("phoneField", ['TcpaService', '$timeout', function(TcpaService, $timeout){
 	return {
 		restrict: 'E',
 		replace: true,
@@ -8,30 +36,53 @@ mainApp.directive("phoneField", ['TcpaService', function(TcpaService){
 			field: '='
 		},
 		template: '<div ng-switch="field.is_single_col">' +
-					'<input ng-switch-when="true" value="" name="{{field.name}}" type="tel" maxlength="" placeholder="" ng-model="phoneNumber">' +
+					'<div ng-switch-when="true"><input value="" name="{{field.name}}" type="tel" maxlength="" placeholder="" ng-model="singlePhoneNumber.value"/></div>' +
 					'<div ng-switch-when="false">' +
-						'<input name="{{field.name}}_AREA" type="tel" maxlength="3" placeholder="" ng-model="area.value">' +
-						'<input name="{{field.name}}_PREFIX" type="tel" maxlength="3" placeholder="" ng-model="prefix.value">' +
-						'<input name="{{field.name}}_NUMBER" type="tel" maxlength="4" placeholder="" ng-model="number.value">' +
+						'<input id="{{field.name}}_AREA" name="{{field.name}}_AREA" type="tel" maxlength="3" placeholder="" ng-model="area.value"/>' +
+						'<input id="{{field.name}}_PREFIX" name="{{field.name}}_PREFIX" type="tel" maxlength="3" placeholder="" ng-model="prefix.value"/>' +
+						'<input id="{{field.name}}_NUMBER" name="{{field.name}}_NUMBER" type="tel" maxlength="4" placeholder="" ng-model="number.value"/>' +
 					'</div>' +
 			    '</div>',
 		link: function(scope, element, attrs){
+			// Check the implementation for $watch. It dosesn't fire when we watch a primitive value inside a directive. We have implemented a work around at the moment. Need to revisit this implementation.
+		
+			var fieldName = scope.field.name, prefixElem, numberElem;
 			if(scope.field.is_single_col){
-				scope.phoneNumber = scope.user[scope.field.name + "_AREA"].value + 
-									scope.user[scope.field.name + "_PREFIX"].value +
-									scope.user[scope.field.name + "_NUMBER"].value;
+				scope.singlePhoneNumber = {};
+				scope.singlePhoneNumber.value = scope.user[fieldName].value[fieldName + "_AREA"] + 
+									scope.user[fieldName].value[fieldName + "_PREFIX"] +
+									scope.user[fieldName].value[fieldName + "_NUMBER"];
 									
-				scope.$watch(phoneNumber, function(newValue, oldValue) {
-						TcpaService.handleTCPA(scope.phoneNumber, true);
+				scope.$watch('singlePhoneNumber.value', function(newValue, oldValue) {
+					TcpaService.handleTCPA(newValue, true);
+					var value = newValue.replace(/[^0-9]/g, '');
+					scope.user[fieldName].value[fieldName + "_AREA"] = newValue.substring(0, 3);
+					scope.user[fieldName].value[fieldName + "_PREFIX"] = newValue.substring(3, 6);
+					scope.user[fieldName].value[fieldName + "_NUMBER"] = newValue.substring(6)
 				});
 			}else {
-				scope.area = scope.user[scope.field.name + "_AREA"];
-				scope.prefix = scope.user[scope.field.name + "_PREFIX"];
-				scope.number = scope.user[scope.field.name + "_NUMBER"];
-				scope.$watchGroup(['area.value', 'prefix.value', 'number.value'], function(newValue, oldValue) {
-						var phoneNumber = scope.area.value + "" + scope.prefix.value + "" + scope.number.value;
-						TcpaService.handleTCPA(phoneNumber, true);
-				});
+				scope.area = {value: scope.user[fieldName].value[fieldName + "_AREA"]};
+				scope.prefix = {value: scope.user[fieldName].value[fieldName + "_PREFIX"]};
+				scope.number = {value: scope.user[fieldName].value[fieldName + "_NUMBER"]};
+				
+				$timeout(function () {
+					prefixElem = document.getElementById(fieldName + '_PREFIX');
+					numberElem = document.getElementById(fieldName + '_NUMBER');
+				}, false);
+				
+				scope.$watch('[area.value, prefix.value, number.value]', function(newValues, oldValues) {
+					var phoneNumber = scope.area.value + scope.prefix.value + scope.number.value;
+					TcpaService.handleTCPA(phoneNumber, true);
+					
+					if (newValues[0] !== oldValues[0] && (newValues[0].length === 3)){ //Check if area is changed & length === maxlength, then move cursor to prefix field
+						prefixElem.focus();
+					}else if (newValues[1] !== oldValues[1] && (newValues[1].length === 3)){ //Check if prefix is changed & length === maxlength, then move cursor to number field
+						numberElem.focus();
+					}
+					scope.user[fieldName].value[fieldName + "_AREA"] = newValues[0];
+					scope.user[fieldName].value[fieldName + "_PREFIX"] = newValues[1];
+					scope.user[fieldName].value[fieldName + "_NUMBER"] = newValues[2]
+				}, true);
 			}
 		}
 	}
@@ -56,6 +107,32 @@ mainApp.directive("homePhoneConsent", function(){
 				args.showConsent ? element.removeClass('ng-hide') : element.addClass('ng-hide');
 			})
 		}
+	}
+});
+
+// Select field directive
+mainApp.directive("selectField", function(){
+	return {
+		restrict: 'E',
+		scope: {
+			user: '=',
+			field: '='
+		},
+		template: '<select name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"></select>',
+		link: function(scope, element, attrs){}
+	}
+});
+
+// Text field directive
+mainApp.directive("textField", function(){
+	return {
+		restrict: 'E',
+		scope: {
+			user: '=',
+			field: '='
+		},
+		template: '<div ng-switch="field.name"><home-phone-consent class="ng-hide" ng-switch-when="HomePhoneConsent" user="user" field="field"></home-phone-consent><input ng-switch-default name="{{field.name}}" ng-model="user[field.name].value"/></div>',
+		link: function(scope, element, attrs){}
 	}
 });
 
@@ -162,8 +239,7 @@ mainApp.directive('directiveIf', ['$compile',
                 };
             }
         };
-    }
-]);
+}]);
 
 mainApp.directive('cbq', ['CBQService', function(CBQService){
 	return {
@@ -172,13 +248,13 @@ mainApp.directive('cbq', ['CBQService', function(CBQService){
 			fieldname: '=',
 			field: '=',
 			user: '=',
-			cbqObj: '='
+			cbqCriteriaObj: '='
 		},
 		link: function link(scope, element, attrs) {
 			scope.postDataObj = {};
-			angular.forEach(scope.cbqObj[scope.fieldname].p, function(parent){
+			angular.forEach(scope.cbqCriteriaObj[scope.fieldname].p, function(parent){
 				scope.$watchCollection(function(){return scope.user[parent]}, function(newValue, oldValue) {
-					CBQService.getCBQData(scope.fieldname, scope.cbqObj[scope.fieldname])
+					CBQService.getCBQData(scope.fieldname)
 						.then(function(data){
 							data ? element.removeClass('ng-hide') : element.addClass('ng-hide');
 						}, function(data){
@@ -196,11 +272,12 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', 'AnimationService
 	return {
         restrict: 'E',
         scope: {
+			user: '=',
 			singleQuestionOptions: '='
 		},
-		template: '<a href="javascript:;" id="backBtn" ng-click="SingleQuestion.showPrevious();">Back</a>' +
-				'<button id="nextBtn" ng-click="SingleQuestion.showNext();">Next</button>' +
-				'<button id="submitBtn" ng-click="singleQuestionOptions.callbacks.submit()">Submit</button>' +
+		template: '<a href="javascript:;" id="backBtn" ng-click="showPrevious();">Back</a>' +
+				'<button id="nextBtn" ng-click="showNext();">Next</button>' +
+				'<button id="submitBtn" ng-click="">Submit</button>' +
 				'<div class="rail"><div class="inner_rail"><div class="bar" ng-style="{\'width\': progressBarWidth + \'%\'}"></div></div></div>',
         link: function(scope, element, attrs){
 			var nextBtnElem = angular.element(document.getElementById('nextBtn')), 
@@ -215,9 +292,9 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', 'AnimationService
 							- else if single field is present and it is textbox
 							- else if current Step is valid
 						*/
-						if(SingleQuestion.getVisibleFieldObj().length > 1){
+						if(SingleQuestion.getCBQVisibleFieldObj().length > 1){
 							nextBtnElem.removeClass('ng-hide')
-						} else if((SingleQuestion.getVisibleFieldObj()[0].type).toLowerCase() === "text") {
+						} else if((SingleQuestion.getCBQVisibleFieldObj()[0].type).toLowerCase() === "text") {
 							nextBtnElem.removeClass('ng-hide')
 						} else{
 							SingleQuestion.isValidSingleQuestionStep().then(function(result){
@@ -254,6 +331,13 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', 'AnimationService
 					}
 				}
 			
+			scope.showNext = function(){
+				SingleQuestion.showNext()
+			};
+			
+			scope.showPrevious = function(){
+				SingleQuestion.showPrevious()
+			};
 			
 			scope.$on('currentUpdated', function(event, args){
 				// update current and validate next step
@@ -265,17 +349,17 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', 'AnimationService
 				scope.progressBarWidth = SingleQuestion.progressBarWidth
 			});
 			
-			scope.SingleQuestion = SingleQuestion.init(scope.singleQuestionOptions);
+			SingleQuestion.init(scope.singleQuestionOptions);
 			
-			for(var i=0;i < SingleQuestion.order.length; i++){
+			for(var i = 0;i < SingleQuestion.order.length; i++){
 				var step = SingleQuestion.order[i];
-				for(var j=0;j < step.length; j++){
-					scope.$watchCollection(function(){return SingleQuestion.user[step[j]]}, function(newValue, oldValue) {
-						if(newValue !== oldValue && SingleQuestion.getVisibleFieldObj().length === 1){
+				for(var j = 0;j < step.length; j++){
+					scope.$watch('user.' + step[j] + '.value', function(newValue, oldValue) {
+						if(newValue !== oldValue && SingleQuestion.getCBQVisibleFieldObj().length === 1){
 							// if current order has only one field visible then call ShowNext on change of model update
 							SingleQuestion.showNext()
 						}
-					});
+					}, true);
 				}			
 			}
         }

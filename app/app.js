@@ -26,19 +26,36 @@
 	}
 }())
 
-var mainApp = angular.module('mainApp', ['ngAnimate', 'ngRoute']);
+var mainApp = angular.module('mainApp', ['ngAnimate', 'ui.router']);
 
-// mainApp.config(function($routeProvider, $locationProvider) {
-    // $locationProvider.hashPrefix('!');
-    // $routeProvider.
-		// when("/another",{
-			// templateUrl: "/views/radio-in-table.html",
-			// controller: "prequalController"
-		// }).
-		// when("/tags",{
-			// templateUrl: "/views/radio-in-table.html",
-			// controller: "prequalController"
-		// }).
-		// otherwise({redirectTo: "/index.html"});
-	// $locationProvider.html5Mode(true);
-// });
+mainApp.constant('myConfig', {
+    templateConfig: {
+		'Select': 'select-field',
+		'RadioInTable': 'radio-in-table',
+		'CustomSelect': 'custom-select',
+		'Text': 'text-field',
+		'PhoneFormat': 'phone-field'
+	}
+});
+
+mainApp.config(['$locationProvider', '$stateProvider', '$urlRouterProvider', function($locationProvider, $stateProvider, $urlRouterProvider) {
+	$locationProvider.html5Mode(true);
+	//$urlRouterProvider.otherwise('/landing.do');
+	$stateProvider
+		.state('prequal', {
+			url: "/index.html",
+			templateUrl: "templates/landing.html",
+			controller: 'prequalController'
+		})
+		.state('increment', {
+			url: "/increment.do",
+			templateUrl: "templates/increment.html",
+			controller: 'incrementController'
+		})
+}]);
+
+function init(json){
+	mainApp.run(['RouterService', function(RouterService) {
+		RouterService.navigate(json)
+	}]);
+}

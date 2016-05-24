@@ -631,7 +631,7 @@
 				"type": "PhoneFormat",
 				"label": "Direct Phone:",
 				"is_cbq": false,
-				"is_single_col": false,
+				"is_single_col": true,
 				"value": {
 					"HP_AREA": "650",
 					"HP_PREFIX": "578",
@@ -647,7 +647,7 @@
 				"type": "PhoneFormat",
 				"label": "Secondary Phone:",
 				"is_cbq": false,
-				"is_single_col": false,
+				"is_single_col": true,
 				"value": {
 					"WP_AREA": "123",
 					"WP_PREFIX": "456",

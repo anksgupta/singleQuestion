@@ -1,0 +1,28 @@
+<form id="myForm" name="myForm">
+	<div ng-repeat="elem in order" ng-init="field = fields[elem]">
+		<div ng-switch="field.type">
+			<div ng-switch-when="Select">
+				<div class="" id="input-{{field.name}}" fieldname="elem" field="field" user="user" cbq-criteria-obj="criteria" directive-if="{'cbq': 'field.is_cbq === true'}" cbq>
+					<p>selected item is : {{user[field.name].value}}</p>
+					<select name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"></select>
+				</div>
+			</div>
+			<div ng-switch-when="RadioInTable">
+				<div class="" id="input-{{field.name}}" fieldname="elem" field="field" user="user" cbq-criteria-obj="criteria" directive-if="{'cbq': 'field.is_cbq === true'}" cbq>
+					<p>selected item is : {{user[field.name].value}}</p>
+					<radio-in-table user="user" field="field"></radio-in-table>
+				</div>	
+			</div>
+			<div ng-switch-when="DateInput">
+				<div class="" id="input-{{field.name}}" fieldname="elem" field="field" user="user" cbq-criteria-obj="criteria" directive-if="{'cbq': 'field.is_cbq === true'}" cbq>
+					<p>selected item is : {{user[field.name].value}}</p>
+					<radio-in-table user="user" field="field"></radio-in-table>
+				</div>	
+			</div>
+		</div>
+	</div>
+	<div>dirty: {{myForm.$dirty}}</div>
+	<div>pristine: {{myForm.$pristine}}</div>
+	<div>valid: {{myForm.$valid}}</div>
+	<button ng-click="click()">Submit</button>
+</form>

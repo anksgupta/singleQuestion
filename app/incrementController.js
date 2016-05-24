@@ -1,4 +1,4 @@
-mainApp.controller('incrementController', ['$scope', 'HttpService', 'CBQService', function($scope, HttpService, CBQService){
+mainApp.controller('incrementController', ['$scope', 'HttpService', 'CBQService', 'TcpaService' function($scope, HttpService, CBQService, TcpaService){
 	HttpService.getData('postqual.json')
 		.then(function(data){
 			$scope.order = [].concat.apply([], data.form.order);
@@ -32,8 +32,6 @@ mainApp.controller('incrementController', ['$scope', 'HttpService', 'CBQService'
 				}
 			}
 			
-			$scope.dataLoaded = true;
-			
 			// Set CBQ service data
 			CBQService.setCBQServiceData({
 				fields: $scope.fields,
@@ -45,6 +43,8 @@ mainApp.controller('incrementController', ['$scope', 'HttpService', 'CBQService'
 			function getUserData(field){
 				return $scope.user[field].value
 			}
+			
+			TcpaService.handleTCPA(scope.phoneNumber, true);
 			
 			$scope.click = function(){
 				var responsePromise = HttpService.getData("/angularjs-examples/json-test-data.jsp", $scope.user);

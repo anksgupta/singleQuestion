@@ -1,0 +1,20 @@
+<form id="myForm" name="myForm" elem-ready>
+	<div ng-repeat="elem in order" ng-init="field = fields[elem]">
+		<div class="animate ng-hide" id="input-{{field.name}}">
+				<div class="question">
+					<p>{{field.name}} item is : {{user[field.name].value}}</p>
+				</div>
+				<div class="answer">
+					<generate-field field-type="{{field.type}}" user="user" field="field""></generate-field>
+				</div>
+				<div class="error"></div>
+		</div>
+	</div>
+	<div>form dirty: {{myForm.$dirty}}</div>
+	<div>form pristine: {{myForm.$pristine}}</div>
+	<div>form valid: {{myForm.$valid}}</div>
+	
+	<div ng-if="::dataLoaded">
+		<single-question-directive user="user" single-question-options="singleQuestionOptions"/>
+	</div>
+</form>
