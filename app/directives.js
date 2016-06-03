@@ -36,7 +36,7 @@ mainApp.directive("phoneField", ['TcpaService', '$timeout', function(TcpaService
 			field: '='
 		},
 		template: '<div ng-switch="field.is_single_col">' +
-					'<div ng-switch-when="true"><input value="" name="{{field.name}}" type="tel" maxlength="" placeholder="" ng-model="singlePhoneNumber.value"/></div>' +
+					'<div ng-switch-when="true"><input name="{{field.name}}" type="tel" maxlength="" placeholder="" ng-model="singlePhoneNumber.value"/></div>' +
 					'<div ng-switch-when="false">' +
 						'<input id="{{field.name}}_AREA" name="{{field.name}}_AREA" type="tel" maxlength="3" placeholder="" ng-model="area.value"/>' +
 						'<input id="{{field.name}}_PREFIX" name="{{field.name}}_PREFIX" type="tel" maxlength="3" placeholder="" ng-model="prefix.value"/>' +
@@ -89,7 +89,7 @@ mainApp.directive("phoneField", ['TcpaService', '$timeout', function(TcpaService
 }]);
 
 // TCPA directive
-mainApp.directive("homePhoneConsent", function(){
+mainApp.directive("homePhoneConsent",['TcpaService', 'InitializationService', function(TcpaService, InitializationService){
 	return {
 		restrict: 'E',
 		scope: {
@@ -100,15 +100,30 @@ mainApp.directive("homePhoneConsent", function(){
 						'<span class="text">{{field.label}}</span>' +
 					'</label>' +
 					'<div class="ng-hide clear">' +
-						'<input id="leadid_tcpa_disclosure" value="{{field.value}}" name="HomePhoneConsent" type="text">' +
+						'<input id="leadid_tcpa_disclosure" name="HomePhoneConsent" type="text" ng-model="user[field.name].value">' +
 					'</div>',
 		link: function(scope, element, attrs){
 			scope.$on('ShowPhoneConsent', function(event, args){
-				args.showConsent ? element.removeClass('ng-hide') : element.addClass('ng-hide');
+				if(args.showConsent){
+					element.removeClass('ng-hide');
+					scope.user['HomePhoneConsent'].value = "Yes"
+				}else{
+					element.addClass('ng-hide');
+					scope.user['HomePhoneConsent'].value = ""
+				}
 			})
+			var hpField = InitializationService.getField('HP'), 
+				wpField = InitializationService.getField('WP'),
+				hpNumber = hpField.value ? (hpField.value.HP_AREA + hpField.value.HP_PREFIX + hpField.value.HP_NUMBER) : "",
+				wpNumber = wpField.value ? (wpField.value.WP_AREA + wpField.value.WP_PREFIX + wpField.value.WP_NUMBER) : "" ;
+			
+			TcpaService.handleTCPA(hpNumber, true).then(function(valid){
+				if(!valid)
+					TcpaService.handleTCPA(wpNumber, true)
+			}) ;
 		}
 	}
-});
+}]);
 
 // Select field directive
 mainApp.directive("selectField", function(){
@@ -166,13 +181,10 @@ mainApp.directive("customSelect", function(){
 		template: '<div class="select-container">' + 
 					'<span class="selected-text">{{user[field.name].value}}</span>' + 
 					'<ul name="{{field.name}}" ng-model="user[field.name]">'+
-						'<li ng-repeat="option in field.options" value="{{option.value}}" ng-click="updateModel(option.value)" ng-class="{myclass: option.value == user[field.name]}">{{option.label}}</li>'+
+						'<li ng-repeat="option in field.options" ng-click="updateModel(option.value)" ng-class="{myclass: option.value == user[field.name]}">{{option.label}}</li>'+
 					'</ul>'+
 					'<select name="{{field.name}}" ng-model="user[field.name]" ng-options="option.value as option.label for option in field.options"></select>' + 
 				'</div>',
-		controller: ['$scope', function($scope) {
-			
-	    }],
 	    link: function(scope, element, attrs) {
 			var fieldName = scope.field.name;
 			scope.updateModel = function(value) {
@@ -268,7 +280,7 @@ mainApp.directive('cbq', ['CBQService', function(CBQService){
 }]);
 
 // SingleQuestion directive
-mainApp.directive('singleQuestionDirective',['SingleQuestion', 'AnimationService', function(SingleQuestion, AnimationService) {
+mainApp.directive('singleQuestionDirective',['SingleQuestion', 'SingleQStepVisibilityService', function(SingleQuestion, SingleQStepVisibilityService) {
 	return {
         restrict: 'E',
         scope: {
@@ -302,34 +314,7 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', 'AnimationService
 							});
 						}
 					}
-				},
-				showHideStep = function(elementToHide){
-					var currentStep = SingleQuestion.order[SingleQuestion.current];
-					// first hide previously active element 
-					if(elementToHide.length > 0){
-						for(var i = 0; i < elementToHide.length; i++){
-							angular.element(document.getElementById('input-' + elementToHide[i])).addClass('ng-hide');
-							AnimationService.fadeOut(document.getElementById('input-' + elementToHide[i]), {
-								duration: 1000,
-								complete: function() {
-									console.log('fadeOut');
-								}
-							});
-						}
-					}
-					// show fields in current order
-					for(var i = 0; i < currentStep.length; i++){
-						if(SingleQuestion.checkVisibility(currentStep[i])) {
-							angular.element(document.getElementById('input-' + currentStep[i])).removeClass('ng-hide');
-							AnimationService.fadeIn(document.getElementById('input-' + currentStep[i]), {
-								duration: 1000,
-								complete: function() {
-									console.log('fadeIn');
-								}
-							});
-						}
-					}
-				}
+				};
 			
 			scope.showNext = function(){
 				SingleQuestion.showNext()
@@ -342,7 +327,11 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', 'AnimationService
 			scope.$on('currentUpdated', function(event, args){
 				// update current and validate next step
 				showNextBtn();
-				showHideStep(args ? args.elementToHide : []);
+				SingleQStepVisibilityService.showHideStep({
+						elementsToHide: SingleQuestion.elementsToHide,
+						elementsToShow: SingleQuestion.elementsToShow,
+						stepDirection: SingleQuestion.stepDirection
+					});
 				(SingleQuestion.current === SingleQuestion.order.length - 1) ? submitBtn.removeClass('ng-hide') : submitBtn.addClass('ng-hide');
 				(SingleQuestion.current !== 0) ? backBtnElem.removeClass('ng-hide') : backBtnElem.addClass('ng-hide');
 				
@@ -359,7 +348,7 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', 'AnimationService
 							// if current order has only one field visible then call ShowNext on change of model update
 							SingleQuestion.showNext()
 						}
-					}, true);
+					});
 				}			
 			}
         }

@@ -10,27 +10,34 @@ mainApp.factory("TcpaService", ['$q', '$rootScope', 'HttpService', function($q, 
 		*	url: Server side method which will verify the phone no 
 		*/
 		handleTCPA: function(number, contactMe, url) {
+			var deferred = $q.defer();
 			if(typeof phoneNumberCache[number] !== 'undefined'){
 				$rootScope.$broadcast('ShowPhoneConsent', {showConsent: phoneNumberCache[number]});
+				deferred.resolve(phoneNumberCache[number]);
 			}else{
 				// If contactMe is true and phone no length > 8, then display consent by default
 				if(contactMe && number.length > 8) {
 					$rootScope.$broadcast('ShowPhoneConsent', {showConsent: true});
+					deferred.resolve(true);
 				// If contactMe is false and phone no length = 10, then make an ajax call to verify the no
 				} else if(number.length === 10) {
 					HttpService.getData(url ? url : 'is-mobile.do').then(function(data){
 						// Cache the phone number and broadcast the event
 						phoneNumberCache[number] = data.response;
 						$rootScope.$broadcast('ShowPhoneConsent', {showConsent: true});
+						deferred.resolve(true);
 					},function(error){
 						// Cache the phone number and broadcast the event
 						phoneNumberCache[number] = false;
-						$rootScope.$broadcast('ShowPhoneConsent', {showConsent: false});
+						$rootScope.$broadcast('ShowPhoneConsent', {showConsent: false})
+						deferred.resolve(false);;
 					});
 				} else {
 					$rootScope.$broadcast('ShowPhoneConsent', {showConsent: false});
+					deferred.resolve(false);
 				}
 			}
+			return deferred.promise;
 		}
 	}
 }]);

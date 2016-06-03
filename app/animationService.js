@@ -1,69 +1,48 @@
 mainApp.factory("AnimationService", ['$q', function($q){
+	/**
+	*	This service contains APIs to animate a particular element or a set of elements using Velocity.js.
+	*	Velocity.js URL: http://julian.com/research/velocity/
+	*	Feel free to add any custom animation with appropriate documentation.
+	*	Don't use jQuery to handle animations
+	*/
+	var slideMap = ['Up', 'Down'], fadeMap = ['In', 'Out'];
 	return {
-		animate: function(element, options) {
-            var start = new Date;
-			if(element.length > 0){
-				element.addClass('animating')
-				var id = setInterval(function() {
-					var timePassed = new Date - start;
-					var progress = timePassed / options.duration;
-					if (progress > 1) {
-						progress = 1;
-					}
-					options.progress = progress;
-					var delta = options.delta(progress);
-					options.step(delta);
-					if (progress == 1) {
-						clearInterval(id);
-						options.complete();
-						element.removeClass('animating')
-					}
-				}, options.delay || 10);
-				}
+		/**
+		*	Slide up/down functionality
+		*	NOTE: If callback function is passed as the third parameter in place of options, velocity internally checks for the parameter type & considers it as the callback
+		*	Velocity iterates through all options arguments and treats:
+		*	- number as a duration
+		*	- strings and arrays as easings
+		*	- function as a complete callback
+		*/
+		slideUpDown: function(element, direction, options, callback) {
+			if(slideMap.indexOf(direction) > -1){
+				Velocity(element, 'slide' + direction, options, (typeof callback === 'function') ? callback(element) : undefined)
+			}
         },
-        fadeOut: function(element, options) {
-            var to = 1, ngElement = angular.element(element);
-			this.animate(ngElement, {
-                duration: options.duration,
-                delta: function(progress) {
-                    progress = this.progress;
-                    //return FX.easing.swing(progress);
-                    return progress;
-                },
-                complete: options.complete,
-                step: function(delta) {
-                    element.style.opacity = to - delta;
-                }
-            });
+		/**
+		*	Fade in/out functionality
+		*	Callback functionality is the same as slide up/down
+		*/
+		fadeInOut: function(element, effect, options, callback) {
+			if(fadeMap.indexOf(effect) > -1){
+				Velocity(element, 'fade' + effect, options, (typeof callback === 'function') ? callback(element) : undefined)
+			}
         },
-        fadeIn: function(element, options) {
-            var to = 0, ngElement = angular.element(element);
-			this.animate(ngElement, {
-                duration: options.duration,
-                delta: function(progress) {
-                    progress = this.progress;
-                    //return FX.easing.swing(progress);
-                    return progress;
-                },
-                complete: options.complete,
-                step: function(delta) {
-                    element.style.opacity = to + delta;
-                }
-            });
-        },
-		slideUp: function(element, options) {
-            var to = 0, ngElement = angular.element(element);
-			this.animate(ngElement, {
-                duration: options.duration,
-                delta: function(progress) {
-                    progress = this.progress;
-					return progress;
-                },
-                complete: options.complete,
-                step: function(delta) {
-                    element.style.top = to + delta;
-                }
-            });
-        },
+		// Need to update jQuery show/hide in the future with animation
+		/*show: function(element, options, callback) {},
+		hide: function(element, options, callback) {},*/
+		/**
+		*	@params
+		*	element: angular or javascript element reference
+		*	properties: css properties to be animated
+		*	options: object which contains options like duration, easing, etc. begin, progress & complete are the 3 callbacks which are a part of options object
+		*/
+		animate: function(element, properties, options){
+			Velocity(element, properties, options)
+		},
+		reverse: function(element) {
+			Velocity(element, 'reverse')
+        }
 	}
 }]);

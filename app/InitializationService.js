@@ -2,12 +2,9 @@ mainApp.factory("InitializationService", ['CBQService', function(CBQService){
 	var user = {}, fields = {};
 	return {
 		/**
-		*	handleTCPA verifies the phone number and broadcasts an event 'ShowPhoneConsent' which should be handled in order to display the consent
-		*	phoneNumberCache is used for caching the phone numbers
+		*	initialize method that creates user and fields object to render form
 		*	@params
-		*	number: Phone no to be verified
-		*	contactMe: Vendor specific attribute which if present means that the consent should be shown if phone no length > 8
-		*	url: Server side method which will verify the phone no 
+		*	json: json data that contains all page data
 		*/
 		initialize: function(json) {
 			// Prepopulate field values in User object
@@ -21,7 +18,8 @@ mainApp.factory("InitializationService", ['CBQService', function(CBQService){
 						user[field.name] = {
 								visible: false,
 								required: field.is_required,
-								is_cbq: field.is_cbq
+								is_cbq: field.is_cbq,
+								error_message: field.error_message
 							};
 						if(field.value){
 							user[field.name].value = field.value
@@ -40,6 +38,9 @@ mainApp.factory("InitializationService", ['CBQService', function(CBQService){
 				user: user,
 				fields: fields
 			}
+		},
+		getField: function(fieldName){
+			return fields[fieldName]
 		},
 		getUserData: function(field){
 			return user[field].value

@@ -41,6 +41,9 @@
 	height: 100%;
 	width: 0
 }
+.hide{
+	display: none
+}
 /*.animate.ng-hide-add-active,
 .animate.ng-hide-remove-active {
   transition: 1s ease-in-out all;
@@ -60,8 +63,6 @@
 .animate{
 	overflow-y: hidden;
 	max-height: 500px; /* approximate max height */
-	transition: .5s cubic-bezier(0, 1, 0.5, 1);
-	opacity: 0
 }
 .animate.ng-hide {
 	max-height: 0;

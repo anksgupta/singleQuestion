@@ -4,7 +4,9 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', 'Initializa
         current: 0,
         steps: 0,		// steps can be set in controller if you need to break Single Question flow needs
 		fieldValidations: {},
-        autoSubmit: false
+        autoSubmit: false,
+		elementsToHide: [],
+		elementsToShow: []
 	};
 	return {
 		init: function(options){
@@ -22,7 +24,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', 'Initializa
 			this.setCurrentValue(this.current, function(){
 				// callback function- to broadcast 'currentUpdated' event once steps are validated and 'current' is updated
 				self.setProgressBarWidth();
-				$rootScope.$broadcast('currentUpdated');
+				self.broadcastCurrent();
 				
 				if(typeof self.callbacks['after_load'] === 'function')
 					self.callbacks['after_load'].call(self)
@@ -83,7 +85,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', 'Initializa
 							self.setProgressBarWidth();
 							if(stepFields.indexOf('is-cbq') > -1 || stepFields.indexOf('is-field') > -1){
 								// if promise response has at least one valid CBQ field or a Standard field; broadcast currentUpdated
-								$rootScope.$broadcast('currentUpdated', {elementToHide: self.order[self.current - 1]})
+								self.broadcastCurrent('next');
 							}else{
 								// if promise response does not have any valid CBQ field or a Standard field then current step is invalid and call the showNext step
 								self.showNext()
@@ -104,12 +106,26 @@ mainApp.factory("SingleQuestion", ['$rootScope', 'CBQService', '$q', 'Initializa
 				this.callbacks['before_prev'].call(this)
 			
 			this.current--;
-			var prevElem = this.order[this.current];
 			this.setProgressBarWidth();
-			$rootScope.$broadcast('currentUpdated', {elementToHide: this.order[this.current + 1]})
-			
+			this.broadcastCurrent('previous')
 			if(typeof this.callbacks['after_prev'] === 'function')
 				this.callbacks['after_prev'].call(this)
+		},
+		broadcastCurrent: function(stepDirection){
+			this.elementsToShow = [];
+			for(var i = 0, currentStep = this.order[this.current]; i < currentStep.length; i++){
+				if(this.checkVisibility(currentStep[i])) {
+					this.elementsToShow.push(currentStep[i])
+				}
+			}
+			
+			if(stepDirection === 'next') {
+				this.elementsToHide = this.order[this.current - 1]
+			} else if(stepDirection === 'previous'){
+				this.elementsToHide = this.order[this.current + 1]
+			}
+			this.stepDirection = stepDirection;
+			$rootScope.$broadcast('currentUpdated')
 		},
 		// progress bar width should always be called before currentUpdated is broadcast
 		setProgressBarWidth: function(){
