@@ -1,4 +1,4 @@
-mainApp.controller('prequalController', ['$scope', '$q', 'HttpService', 'SingleQuestion', 'InitializationService', 'RouterService', function($scope, $q, HttpService, SingleQuestion, InitializationService, RouterService){
+mainApp.controller('prequalController', ['$scope', '$q', 'HttpService', 'InitializationService', 'RouterService', function($scope, $q, HttpService, InitializationService, RouterService){
 	var data = RouterService.getRouteData();
 	angular.extend($scope, InitializationService.initialize(data));
 	
@@ -31,10 +31,6 @@ mainApp.controller('prequalController', ['$scope', '$q', 'HttpService', 'SingleQ
 			}
 		}
 	}
-	
-	$scope.$on('innerContentLoaded', function(args) {
-		$scope.dataLoaded = true;
-	});
 	
 	// For rendering the fields based on order, we have to remove the nested arrays
 	$scope.order = [].concat.apply([], data.form.order)

@@ -11,7 +11,7 @@ mainApp.factory("SingleQStepVisibilityService", ['AnimationService', function(An
 		*/
 		showHideStep: function(stepObj) {
 			// first hide previously active step 
-			AnimationService.fadeInOut(document.querySelectorAll('#input-' + stepObj.elementsToHide.join(',#input-')), 'Out', {duration: 0}, function(element){console.log(element)});
+			AnimationService.fadeInOut(document.querySelectorAll('#input-' + stepObj.elementsToHide.join(',#input-')), 'Out', {duration: 0});
 			
 			AnimationService.fadeInOut(document.querySelectorAll('#input-' + stepObj.elementsToShow.join(',#input-')), 'In');
 		}

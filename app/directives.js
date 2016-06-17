@@ -15,19 +15,27 @@ mainApp.directive('generateField', ['myConfig', '$compile', function(myConfig, $
 }]);
 
 // Directive which checks if inner content has loaded
-mainApp.directive('elemReady', [function() {
+mainApp.directive('elemReady', ['$rootScope', 'NotificationService', function($rootScope, NotificationService) {
 		return {
 			restrict: 'A',
-			link: function(scope, elem, attrs) {    
+			link: function(scope, elem, attrs) { 
+				var eventsArr = attrs.elemReady.split(',');
+				$rootScope.$on('eventNotified', function(event, args){
+					eventsArr.splice(0, 1);
+					if(eventsArr.length > 0){$rootScope.$emit(eventsArr[0])}
+				});
 				elem.ready(function(){
-					scope.$emit('innerContentLoaded')
-				})
+					$rootScope.$emit(eventsArr[0])
+					// need to check alternative. remove apply and check the timing issue - WP,HP watchers not getting fired on elem.ready()
+					scope.$apply();
+				});
+				
 			}
 		}
 }])
 
 // Home phone directive
-mainApp.directive("phoneField", ['TcpaService', '$timeout', function(TcpaService, $timeout){
+mainApp.directive("phoneField", ['TcpaService', 'NotificationService', '$rootScope', function(TcpaService, NotificationService, $rootScope){
 	return {
 		restrict: 'E',
 		replace: true,
@@ -45,51 +53,61 @@ mainApp.directive("phoneField", ['TcpaService', '$timeout', function(TcpaService
 			    '</div>',
 		link: function(scope, element, attrs){
 			// Check the implementation for $watch. It dosesn't fire when we watch a primitive value inside a directive. We have implemented a work around at the moment. Need to revisit this implementation.
-		
-			var fieldName = scope.field.name, prefixElem, numberElem;
-			if(scope.field.is_single_col){
-				scope.singlePhoneNumber = {};
-				scope.singlePhoneNumber.value = scope.user[fieldName].value[fieldName + "_AREA"] + 
-									scope.user[fieldName].value[fieldName + "_PREFIX"] +
-									scope.user[fieldName].value[fieldName + "_NUMBER"];
-									
-				scope.$watch('singlePhoneNumber.value', function(newValue, oldValue) {
-					TcpaService.handleTCPA(newValue, true);
-					var value = newValue.replace(/[^0-9]/g, '');
-					scope.user[fieldName].value[fieldName + "_AREA"] = newValue.substring(0, 3);
-					scope.user[fieldName].value[fieldName + "_PREFIX"] = newValue.substring(3, 6);
-					scope.user[fieldName].value[fieldName + "_NUMBER"] = newValue.substring(6)
-				});
-			}else {
-				scope.area = {value: scope.user[fieldName].value[fieldName + "_AREA"]};
-				scope.prefix = {value: scope.user[fieldName].value[fieldName + "_PREFIX"]};
-				scope.number = {value: scope.user[fieldName].value[fieldName + "_NUMBER"]};
-				
-				$timeout(function () {
+			NotificationService.subscribe('repeatComplete', function(event, args){
+				var fieldName = scope.field.name, prefixElem, numberElem;
+				if(scope.field.is_single_col){
+					scope.singlePhoneNumber = {};
+						scope.singlePhoneNumber.value = scope.user[fieldName].value[fieldName + "_AREA"] + 
+										scope.user[fieldName].value[fieldName + "_PREFIX"] +
+										scope.user[fieldName].value[fieldName + "_NUMBER"];
+										
+					scope.$watch('singlePhoneNumber.value', function(newValue, oldValue) {
+						var phoneNumber = newValue.replace(/[^0-9]/g, '');
+						TcpaService.handleTCPA({
+								number: phoneNumber, 
+								contactMe: true,
+								fieldName: fieldName
+							}).then(function(){
+								NotificationService.notify('repeatComplete');
+							});
+						scope.user[fieldName].value[fieldName + "_AREA"] = phoneNumber.substring(0, 3);
+						scope.user[fieldName].value[fieldName + "_PREFIX"] = phoneNumber.substring(3, 6);
+						scope.user[fieldName].value[fieldName + "_NUMBER"] = phoneNumber.substring(6)
+					});
+				}else {
+					scope.area = {value: scope.user[fieldName].value[fieldName + "_AREA"]};
+					scope.prefix = {value: scope.user[fieldName].value[fieldName + "_PREFIX"]};
+					scope.number = {value: scope.user[fieldName].value[fieldName + "_NUMBER"]};
+					
 					prefixElem = document.getElementById(fieldName + '_PREFIX');
 					numberElem = document.getElementById(fieldName + '_NUMBER');
-				}, false);
-				
-				scope.$watch('[area.value, prefix.value, number.value]', function(newValues, oldValues) {
-					var phoneNumber = scope.area.value + scope.prefix.value + scope.number.value;
-					TcpaService.handleTCPA(phoneNumber, true);
-					
-					if (newValues[0] !== oldValues[0] && (newValues[0].length === 3)){ //Check if area is changed & length === maxlength, then move cursor to prefix field
-						prefixElem.focus();
-					}else if (newValues[1] !== oldValues[1] && (newValues[1].length === 3)){ //Check if prefix is changed & length === maxlength, then move cursor to number field
-						numberElem.focus();
-					}
-					scope.user[fieldName].value[fieldName + "_AREA"] = newValues[0];
-					scope.user[fieldName].value[fieldName + "_PREFIX"] = newValues[1];
-					scope.user[fieldName].value[fieldName + "_NUMBER"] = newValues[2]
-				}, true);
-			}
+										
+					scope.$watch('[area.value, prefix.value, number.value]', function(newValues, oldValues) {
+						var phoneNumber = scope.area.value + scope.prefix.value + scope.number.value;
+						TcpaService.handleTCPA({
+								number: phoneNumber, 
+								contactMe: true,
+								fieldName: fieldName
+							}).then(function(){
+								NotificationService.notify('repeatComplete');
+							});
+						if (newValues[0] !== oldValues[0] && (newValues[0].length === 3)){ //Check if area is changed & length === maxlength, then move cursor to prefix field
+							prefixElem.focus();
+						}else if (newValues[1] !== oldValues[1] && (newValues[1].length === 3)){ //Check if prefix is changed & length === maxlength, then move cursor to number field
+							numberElem.focus();
+						}
+						scope.user[fieldName].value[fieldName + "_AREA"] = newValues[0];
+						scope.user[fieldName].value[fieldName + "_PREFIX"] = newValues[1];
+						scope.user[fieldName].value[fieldName + "_NUMBER"] = newValues[2]
+					}, true);
+				}
+			});
 		}
 	}
 }]);
 
 // TCPA directive
-mainApp.directive("homePhoneConsent",['TcpaService', 'InitializationService', function(TcpaService, InitializationService){
+mainApp.directive("homePhoneConsent",['NotificationService', function(NotificationService){
 	return {
 		restrict: 'E',
 		scope: {
@@ -112,15 +130,6 @@ mainApp.directive("homePhoneConsent",['TcpaService', 'InitializationService', fu
 					scope.user['HomePhoneConsent'].value = ""
 				}
 			})
-			var hpField = InitializationService.getField('HP'), 
-				wpField = InitializationService.getField('WP'),
-				hpNumber = hpField.value ? (hpField.value.HP_AREA + hpField.value.HP_PREFIX + hpField.value.HP_NUMBER) : "",
-				wpNumber = wpField.value ? (wpField.value.WP_AREA + wpField.value.WP_PREFIX + wpField.value.WP_NUMBER) : "" ;
-			
-			TcpaService.handleTCPA(hpNumber, true).then(function(valid){
-				if(!valid)
-					TcpaService.handleTCPA(wpNumber, true)
-			}) ;
 		}
 	}
 }]);
@@ -280,7 +289,7 @@ mainApp.directive('cbq', ['CBQService', function(CBQService){
 }]);
 
 // SingleQuestion directive
-mainApp.directive('singleQuestionDirective',['SingleQuestion', 'SingleQStepVisibilityService', function(SingleQuestion, SingleQStepVisibilityService) {
+mainApp.directive('singleQuestionDirective',['$rootScope', 'SingleQuestion', 'SingleQStepVisibilityService' ,'NotificationService', function($rootScope, SingleQuestion, SingleQStepVisibilityService, NotificationService) {
 	return {
         restrict: 'E',
         scope: {
@@ -324,13 +333,13 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', 'SingleQStepVisib
 				SingleQuestion.showPrevious()
 			};
 			
-			scope.$on('currentUpdated', function(event, args){
+			$rootScope.$on('currentUpdated', function(event, args){
 				// update current and validate next step
 				showNextBtn();
 				SingleQStepVisibilityService.showHideStep({
-						elementsToHide: SingleQuestion.elementsToHide,
-						elementsToShow: SingleQuestion.elementsToShow,
-						stepDirection: SingleQuestion.stepDirection
+						stepDirection: args.stepDirection,
+						elementsToHide: args.elementsToHide,
+						elementsToShow: args.elementsToShow
 					});
 				(SingleQuestion.current === SingleQuestion.order.length - 1) ? submitBtn.removeClass('ng-hide') : submitBtn.addClass('ng-hide');
 				(SingleQuestion.current !== 0) ? backBtnElem.removeClass('ng-hide') : backBtnElem.addClass('ng-hide');
@@ -338,19 +347,20 @@ mainApp.directive('singleQuestionDirective',['SingleQuestion', 'SingleQStepVisib
 				scope.progressBarWidth = SingleQuestion.progressBarWidth
 			});
 			
-			SingleQuestion.init(scope.singleQuestionOptions);
-			
-			for(var i = 0;i < SingleQuestion.order.length; i++){
-				var step = SingleQuestion.order[i];
-				for(var j = 0;j < step.length; j++){
-					scope.$watch('user.' + step[j] + '.value', function(newValue, oldValue) {
-						if(newValue !== oldValue && SingleQuestion.getCBQVisibleFieldObj().length === 1){
-							// if current order has only one field visible then call ShowNext on change of model update
-							SingleQuestion.showNext()
-						}
-					});
-				}			
-			}
+			NotificationService.subscribe('singleQuestionInitialized', function(event, args){
+				SingleQuestion.init(scope.singleQuestionOptions);
+				for(var i = 0;i < SingleQuestion.order.length; i++){
+					var step = SingleQuestion.order[i];
+					for(var j = 0;j < step.length; j++){
+						scope.$watch('user.' + step[j] + '.value', function(newValue, oldValue) {
+							if(newValue !== oldValue && SingleQuestion.getCBQVisibleFieldObj().length === 1){
+								// if current order has only one field visible then call ShowNext on change of model update
+								SingleQuestion.showNext()
+							}
+						});
+					}			
+				}
+			});
         }
     }      
 }]);
