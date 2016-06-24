@@ -5,7 +5,7 @@ mainApp.factory("AnimationService", ['$q', function($q){
 	*	Feel free to add any custom animation with appropriate documentation.
 	*	Don't use jQuery to handle animations
 	*/
-	var slideMap = ['Up', 'Down'], fadeMap = ['In', 'Out'];
+	var slideMap = ['Up', 'Down', 'Left', 'Right'], fadeMap = ['In', 'Out'];
 	return {
 		/**
 		*	Slide up/down functionality
@@ -39,10 +39,31 @@ mainApp.factory("AnimationService", ['$q', function($q){
 		*	options: object which contains options like duration, easing, etc. begin, progress & complete are the 3 callbacks which are a part of options object
 		*/
 		animate: function(element, properties, options){
-			Velocity(element, properties, options)
+			return Velocity(element, properties, options)
 		},
 		reverse: function(element) {
 			Velocity(element, 'reverse')
-        }
+        },
+		slideLeftRight: function(element, direction, options, callback) {
+			if(slideMap.indexOf(direction) > -1){
+					for(var index = 0; index < element.length; index++) {
+						element[index].style.position = 'relative';
+						element[index].style.display = 'block';
+						element[index].style.opacity = '';
+						if(direction === 'Left'){
+							element[index].style.left = '100%';
+						} else if(direction === 'Right'){
+							element[index].style.left = '-100%';
+						}
+					}
+				this.animate(element, {left:'0%'}, options, function(){
+						for(var index = 0; index < element.length; index++) {
+							element[index].style.position = 'static';
+						}
+						if(typeof callback === 'function')
+							callback(element);
+					})
+			}
+        },
 	}
 }]);

@@ -11,9 +11,22 @@ mainApp.factory("SingleQStepVisibilityService", ['AnimationService', function(An
 		*/
 		showHideStep: function(stepObj) {
 			// first hide previously active step 
-			AnimationService.fadeInOut(document.querySelectorAll('#input-' + stepObj.elementsToHide.join(',#input-')), 'Out', {duration: 0});
-			
-			AnimationService.fadeInOut(document.querySelectorAll('#input-' + stepObj.elementsToShow.join(',#input-')), 'In');
+			var elementsToShow = document.querySelectorAll('#input-' + stepObj.elementsToShow.join(',#input-')),
+				elementsToHide = document.querySelectorAll('#input-' + stepObj.elementsToHide.join(',#input-'));
+			switch(stepObj.stepDirection){
+				case 'next':
+					AnimationService.slideLeftRight(elementsToShow, 'Left', {duration: 400});
+					AnimationService.fadeInOut(elementsToHide, 'Out', {duration: 0});
+					break;
+				case 'previous':
+					AnimationService.slideLeftRight(elementsToShow, 'Right', {duration: 400});
+					AnimationService.fadeInOut(elementsToHide, 'Out', {duration: 0});
+					break;
+				case 'load':
+					AnimationService.fadeInOut(elementsToShow, 'In');
+					AnimationService.fadeInOut(elementsToHide, 'Out');
+					break;
+			}
 		}
 	}
 }]);

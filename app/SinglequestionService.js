@@ -1,9 +1,12 @@
+  /**
+	* - To move to the next step without validating the current step, call SingleQuestion.broadcastCurrent('<next/previous>')
+	*/
 mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'InitializationService', 'NotificationService', function($rootScope, $q, CBQService, InitializationService, NotificationService){
 	var defaults = {
         callbacks: {},
         current: 0,
         steps: 0,		// steps can be set in controller if you need to break Single Question flow needs
-		fieldValidations: {},
+		preConditions: {},
         autoSubmit: false
 	};
 	return {
@@ -21,8 +24,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 			// set current property of SingleQuestion object
 			this.setCurrentValue(this.current, function(){
 				// callback function- to broadcast 'currentUpdated' event once steps are validated and 'current' is updated
-				self.setProgressBarWidth();
-				self.broadcastCurrent();
+				self.broadcastCurrent('load');
 				NotificationService.notify('singleQuestionInitialized');
 				
 				if(typeof self.callbacks['after_load'] === 'function')
@@ -41,8 +43,8 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 					result = false
 				}
 				deferred.resolve(result);
-			}else if(this.fieldValidations[fieldName]){	// check if field validation is defined in controller
-				this.fieldValidations[fieldName].call(this).then(function(result){	
+			}else if(this.preConditions[fieldName]){	// check if field validation is defined in controller
+				this.preConditions[fieldName].call(this).then(function(result){	
 					deferred.resolve(result);
 				})
 			}else{
@@ -80,13 +82,12 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 						promise = self.handleCBQPromise(self.current + 1);
 						// Add all the deferred objects for each field to $q service queue
 						$q.all(promise).then(function(stepFields) {
-							self.current++;
-							self.setProgressBarWidth();
 							if(stepFields.indexOf('is-cbq') > -1 || stepFields.indexOf('is-field') > -1){
 								// if promise response has at least one valid CBQ field or a Standard field; broadcast currentUpdated
 								self.broadcastCurrent('next');
 							}else{
 								// if promise response does not have any valid CBQ field or a Standard field then current step is invalid and call the showNext step
+								self.current++;
 								self.showNext()
 							}
 					
@@ -104,28 +105,33 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 			if(typeof this.callbacks['before_prev'] === 'function')
 				this.callbacks['before_prev'].call(this)
 			
-			this.current--;
-			this.setProgressBarWidth();
 			this.broadcastCurrent('previous')
 			if(typeof this.callbacks['after_prev'] === 'function')
 				this.callbacks['after_prev'].call(this)
 		},
 		broadcastCurrent: function(stepDirection){
 			var elementsToShow = [], elementsToHide = [];
+			
+			switch(stepDirection) {
+				case 'next':
+					elementsToHide = this.order[this.current]
+					this.current++;
+					break;
+				case 'previous':
+					elementsToHide = this.order[this.current]
+					this.current--;
+					break;
+			}
+			
 			for(var i = 0, currentStep = this.order[this.current]; i < currentStep.length; i++){
 				if(this.checkVisibility(currentStep[i])) {
 					elementsToShow.push(currentStep[i])
 				}
 			}
-			
-			if(stepDirection === 'next') {
-				elementsToHide = this.order[this.current - 1]
-			} else if(stepDirection === 'previous'){
-				elementsToHide = this.order[this.current + 1]
-			}
+			this.setProgressBarWidth();
 			this.stepDirection = stepDirection;
 			$rootScope.$emit('currentUpdated', {
-				stepDirection: stepDirection,
+				stepDirection: stepDirection ? stepDirection : 'next',
 				elementsToHide: elementsToHide,
 				elementsToShow: elementsToShow
 			});

@@ -142,8 +142,7 @@ mainApp.directive("selectField", function(){
 			user: '=',
 			field: '='
 		},
-		template: '<select name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"></select>',
-		link: function(scope, element, attrs){}
+		template: '<select name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"><option value="" hidden>-- Select One --</option></select>'
 	}
 });
 

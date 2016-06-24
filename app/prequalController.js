@@ -4,8 +4,9 @@ mainApp.controller('prequalController', ['$scope', '$q', 'HttpService', 'Initial
 	
 	$scope.singleQuestionOptions = {
 		order: data.form.order,
-		fieldValidations : {
-		// Add all field validations for single question flow
+		preConditions : {
+		// Add all field validations & prerequisites before show next is called
+		// SingleQuestion 2.2 'Go_Next' functionality inside showNext function can be implemented by resolving promise with 'false' value
 			"Age": function(){
 				var deferred = $q.defer();
 				HttpService.getData('/addressValidator.do').then(function(){
