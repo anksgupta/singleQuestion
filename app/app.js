@@ -26,14 +26,18 @@
 	}
 }())
 
-var mainApp = angular.module('mainApp', ['ngAnimate', 'ui.router']);
+var mainApp = angular.module('mainApp', ['ui.router']);
 
 mainApp.constant('myConfig', {
     templateConfig: {
 		'Select': 'select-field',
 		'RadioInTable': 'radio-in-table',
 		'CustomSelect': 'custom-select',
-		'Text': 'text-field',
+		'Text': 'generate-field-by-type',
+		'Checkbox': 'generate-field-by-type',
+		'ActualText': 'text-field',
+		'ActualCheckbox': 'checkbox-field',
+		'HomePhoneConsent': 'home-phone-consent',
 		'PhoneFormat': 'phone-field'
 	}
 });

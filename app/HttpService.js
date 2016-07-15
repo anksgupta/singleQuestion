@@ -2,7 +2,8 @@ mainApp.factory("HttpService", ['$http', '$q', function($http, $q){
 	return {
 		getData: function(url, postDataObj){
 			var deferred = $q.defer();	//Creating a deferred object
-			$http.post(url, postDataObj)
+			url += ((url.indexOf('?') > -1) ? '&' : '?') + 'callback=JSON_CALLBACK';
+			$http.jsonp(url, postDataObj)
 				.success(function(data) {
 					deferred.resolve(data)	//Passing data to deferred's resolve function on successful completion
 				})

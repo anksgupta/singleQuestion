@@ -2,7 +2,6 @@ mainApp.factory("RouterService", ['$state', function($state){
 	var routeData = {};
 	return {
 		/**
-		*	handleTCPA verifies the phone number and broadcasts an event 'ShowPhoneConsent' which should be handled in order to display the consent
 		*	phoneNumberCache is used for caching the phone numbers
 		*	@params
 		*	number: Phone no to be verified

@@ -1,4 +1,4 @@
-// Directive which dynamically creates form fields based on the input
+// Directive which dynamically creates form fields based on the input type
 mainApp.directive('generateField', ['myConfig', '$compile', function(myConfig, $compile) {
 		return {
 			restrict: 'E',
@@ -22,7 +22,9 @@ mainApp.directive('elemReady', ['$rootScope', 'NotificationService', function($r
 				var eventsArr = attrs.elemReady.split(',');
 				$rootScope.$on('eventNotified', function(event, args){
 					eventsArr.splice(0, 1);
-					if(eventsArr.length > 0){$rootScope.$emit(eventsArr[0])}
+					if(eventsArr.length > 0){
+						$rootScope.$emit(eventsArr[0])
+					}
 				});
 				elem.ready(function(){
 					$rootScope.$emit(eventsArr[0])
@@ -44,7 +46,7 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', '$rootSco
 			field: '='
 		},
 		template: '<div ng-switch="field.is_single_col">' +
-					'<div ng-switch-when="true"><input name="{{field.name}}" type="tel" maxlength="" placeholder="" ng-model="singlePhoneNumber.value"/></div>' +
+					'<div ng-switch-when="true"><input name="qs-{{field.name}}" type="tel" maxlength="" placeholder="" ng-model="singlePhoneNumber.value"/></div>' +
 					'<div ng-switch-when="false">' +
 						'<input id="{{field.name}}_AREA" name="{{field.name}}_AREA" type="tel" maxlength="3" placeholder="" ng-model="area.value"/>' +
 						'<input id="{{field.name}}_PREFIX" name="{{field.name}}_PREFIX" type="tel" maxlength="3" placeholder="" ng-model="prefix.value"/>' +
@@ -114,20 +116,24 @@ mainApp.directive("homePhoneConsent",['NotificationService', function(Notificati
 			user: '=',
 			field: '='
 		},
-		template: '<label class="prompt" for="leadid_tcpa_disclosure">' +
-						'<span class="text">{{field.label}}</span>' +
-					'</label>' +
-					'<div class="ng-hide clear">' +
-						'<input id="leadid_tcpa_disclosure" name="HomePhoneConsent" type="text" ng-model="user[field.name].value">' +
+		template: '<div ng-switch="field.type">' + 
+					'<div ng-switch-when="Text">' +
+						'<label>' + 
+							'<input class="ng-hide" id="leadid_tcpa_disclosure" name="qs-HomePhoneConsent" type="text" ng-model="user[field.name].value">' + 
+							'<span>{{field.label}}</span>' + 
+						'</label>' + 
+					'</div>' + 
+					'<div ng-switch-when="Checkbox">' + 
+						'<label>' + 
+							'<input ng-true-value="\'Yes\'" ng-false-value="\'\'" id="leadid_tcpa_disclosure" name="qs-HomePhoneConsent" type="checkbox" ng-model="user[field.name].value">' + 
+							'<span>{{field.label}}</span>' + 
+						'</label>' + 
 					'</div>',
 		link: function(scope, element, attrs){
 			scope.$on('ShowPhoneConsent', function(event, args){
-				if(args.showConsent){
-					element.removeClass('ng-hide');
-					scope.user['HomePhoneConsent'].value = "Yes"
-				}else{
-					element.addClass('ng-hide');
-					scope.user['HomePhoneConsent'].value = ""
+				element[(args.showConsent ? 'remove' : 'add') + 'Class']('ng-hide');
+				if(scope.field.type !== 'Checkbox'){
+					scope.user['HomePhoneConsent'].value = (args.showConsent ? 'Yes' : '')
 				}
 			})
 		}
@@ -142,7 +148,23 @@ mainApp.directive("selectField", function(){
 			user: '=',
 			field: '='
 		},
-		template: '<select name="{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"><option value="" hidden>-- Select One --</option></select>'
+		template: '<select name="qs-{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"><option value="" hidden>-- Select One --</option></select>' +
+		'<field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>'
+	}
+});
+
+// HomePhoneConsent field can be of type textbox as well as checkbox. The below directive handles text, checkbox & HomePhoneConsent field directives
+mainApp.directive("generateFieldByType", function(){
+	return {
+		restrict: 'E',
+		scope: {
+			user: '=',
+			field: '='
+		},
+		template: '<div ng-switch="field.name">' + 
+					'<generate-field ng-switch-when="HomePhoneConsent" field-type="HomePhoneConsent" user="user" field="field"></generate-field>' + 
+					'<generate-field ng-switch-default field-type="Actual{{field.type}}" user="user" field="field"></generate-field>' + 
+				'</div>'
 	}
 });
 
@@ -154,8 +176,64 @@ mainApp.directive("textField", function(){
 			user: '=',
 			field: '='
 		},
-		template: '<div ng-switch="field.name"><home-phone-consent class="ng-hide" ng-switch-when="HomePhoneConsent" user="user" field="field"></home-phone-consent><input ng-switch-default name="{{field.name}}" ng-model="user[field.name].value"/></div>',
+		template: '<div>' + 
+					'<input name="qs-{{field.name}}" ng-model="user[field.name].value"/>' + 
+					'<field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>' + 
+				'</div>',
 		link: function(scope, element, attrs){}
+	}
+});
+
+// Checkbox field directive
+mainApp.directive("checkboxField", function(){
+	return {
+		restrict: 'E',
+		scope: {
+			user: '=',
+			field: '='
+		},
+		template: '<div>' + 
+					'<label ng-repeat="option in field.options">' + 
+						'<input type="checkbox" name="qs-{{field.name}}" ng-true-value="\'{{option.value}}\'" ng-false-value="\'\'" ng-change="setValue(option)" ng-model="option.checked"/>' + 
+						'<span>{{option.label}}</span>' + 
+					'</label>' + 
+					'<field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>' + 
+				'</div>',
+		link: function(scope, element, attrs){
+			var values = scope.user[scope.field.name].value.split(',');
+			if(values.length > 0){
+				for(var option = 0, valueIndex; option < scope.field.options.length; option++){
+					valueIndex = values.indexOf(scope.field.options[option].value)
+					if(valueIndex > -1){
+						scope.field.options[option].checked = values[valueIndex];
+						break
+					}
+				}
+			}
+			scope.setValue = function(option){
+				values = scope.user[scope.field.name].value.split(',');
+				if(option.checked && values.indexOf(option.value) === -1){
+					values.push(option.value)
+				}else if(!option.checked && values.indexOf(option.value) > -1){
+					values.splice(values.indexOf(option.value), 1)
+				}
+				
+				scope.user[scope.field.name].value = values.join(',')
+			}
+		}
+	}
+});
+
+// Radio button directive
+mainApp.directive("fieldActualValue", function(){
+	return {
+		restrict: 'E',
+		replace: true,
+		scope: {
+			user: '=',
+			fieldName: '@'
+		},
+		template: '<input name="{{fieldName}}" type="text" style="display: none;" data-leadid="true" value="{{user[fieldName].value}}">'
 	}
 });
 
@@ -167,10 +245,10 @@ mainApp.directive("radioInTable", function(){
 			user: '=',
 			field: '='
 		},
-		template: '<div ng-click="updateModel(field.name, option.value)" ng-class="{myclass: option.value == user[field.name].value}" ng-repeat="option in field.options">{{option.label}}</div>',
+		template: '<div ng-click="updateModel(field.name, option.value)" ng-class="{myclass: option.value == user[field.name].value}" ng-repeat="option in 	' 			+ 'field.options">{{option.label}}</div><field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>',
 		link: function(scope, element, attrs){
 			scope.updateModel = function(fieldName, value) {
-				if(scope.user[fieldName].value == value)
+				if(scope.user[fieldName].value === value)
 					scope.user[fieldName].unchanged = new Date().getTime()  // flag to handle a case in which user clicks on the same option and shownext should be called
                 scope.user[fieldName].value = value;
             }
@@ -191,7 +269,8 @@ mainApp.directive("customSelect", function(){
 					'<ul name="{{field.name}}" ng-model="user[field.name]">'+
 						'<li ng-repeat="option in field.options" ng-click="updateModel(option.value)" ng-class="{myclass: option.value == user[field.name]}">{{option.label}}</li>'+
 					'</ul>'+
-					'<select name="{{field.name}}" ng-model="user[field.name]" ng-options="option.value as option.label for option in field.options"></select>' + 
+					'<select name="qs-{{field.name}}" ng-model="user[field.name]" ng-options="option.value as option.label for option in field.options"></select>' + 
+					'<field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>' +
 				'</div>',
 	    link: function(scope, element, attrs) {
 			var fieldName = scope.field.name;

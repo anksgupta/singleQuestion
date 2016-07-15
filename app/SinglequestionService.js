@@ -136,7 +136,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 				elementsToShow: elementsToShow
 			});
 		},
-		// progress bar width should always be called before currentUpdated is broadcast
+		// progress bar width should always be called before currentUpdated is broadcasted
 		setProgressBarWidth: function(){
 			var width = Math.floor((this.current * 100) / this.steps);
 			this.progressBarWidth = width;
