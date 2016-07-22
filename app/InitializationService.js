@@ -1,5 +1,5 @@
 mainApp.factory("InitializationService", ['CBQService', function(CBQService){
-	var user = {}, fields = {};
+	var user = {}, fields = {}, cbqCriteria = {};
 	return {
 		/**
 		*	initialize method that creates user and fields object to render form
@@ -7,6 +7,8 @@ mainApp.factory("InitializationService", ['CBQService', function(CBQService){
 		*	json: json data that contains all page data
 		*/
 		initialize: function(json) {
+			// set cbq criteria
+			cbqCriteria = eval(json.form.cbq)
 			// Prepopulate field values in User object
 			for(var key in json.form.fields){
 				var field = json.form.fields[key];
@@ -26,11 +28,10 @@ mainApp.factory("InitializationService", ['CBQService', function(CBQService){
 						}
 				}
 			}
-			
 			// Set CBQ service data
 			CBQService.setCBQServiceData({
 				fields: fields,
-				cbq: eval(json.form.cbq),
+				cbq: cbqCriteria,
 				getUserData: this.getUserData
 			});
 			
@@ -56,6 +57,9 @@ mainApp.factory("InitializationService", ['CBQService', function(CBQService){
 		},
 		setIsVisible: function(field, value){
 			return user[field].visible = value
+		},
+		getCriteria: function(){
+			return cbqCriteria;
 		}
 	}
 }]);

@@ -44,26 +44,13 @@ label{
 .hide{
 	display: none
 }
-/*.animate.ng-hide-add-active,
-.animate.ng-hide-remove-active {
-  transition: 1s ease-in-out all;
-}
-.animate.ng-hide {
-	opacity: 0;
-}
-.animate, .animate.ng-hide.ng-hide-active {
-	opacity: 1;
-}
-.animate.ng-hide{
-	transition: 0.5s ease-in-out all;
-	-webkit-transition: 0.5s ease-in-out all;
-	-moz-transition: 0.5s ease-in-out all;
-	-o-transition: 0.5s ease-in-out all;
-}*/
 .animate{
 	overflow-y: hidden;
 	max-height: 500px; /* approximate max height */
 }
 .animate.ng-hide {
 	max-height: 0;
+}
+.fields-section {
+	overflow: hidden;
 }

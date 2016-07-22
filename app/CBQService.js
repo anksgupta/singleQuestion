@@ -24,7 +24,9 @@ mainApp.factory("CBQService", ['HttpService', '$q', function(HttpService, $q){
 				postDataObj['key'] = keys.join(',');
 			}else {
 				postDataObj['key'] = criteriaObj.k;
-				postDataObj[criteriaObj.p[0]] = CBQServiceData.getUserData(criteriaObj.p[0]);
+				angular.forEach(criteriaObj.p, function(fieldName, index){
+					postDataObj[fieldName] = CBQServiceData.getUserData(fieldName);
+				});
 			}
 			HttpService.getData('/CBQValidator.jsp',postDataObj).then(function(data){
 				deferred.resolve(true);

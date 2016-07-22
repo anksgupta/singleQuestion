@@ -344,8 +344,7 @@ mainApp.directive('cbq', ['CBQService', function(CBQService){
 	return {
 		restrict: 'A',
 		scope: {
-			fieldname: '=',
-			field: '=',
+			fieldname: '@',
 			user: '=',
 			cbqCriteriaObj: '='
 		},
