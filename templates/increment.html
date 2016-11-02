@@ -1,18 +1,17 @@
 <form id="myForm" name="myForm">
 	<h2>Increment</h2>
-	<div ng-repeat="elem in order" ng-init="field = fields[elem]">
-		<div class="animate" id="input-{{field.name}}" fieldname="{{elem}}" user="user" cbq-criteria-obj="criteria" directive-if="{'cbq': 'field.is_cbq === true'}" cbq>
-			<div class="question">
-				<p>{{field.name}} item is : {{user[field.name].value}}</p>
+	<div class="fields-section" elem-ready="repeatComplete">
+		<div ng-repeat="elem in order" ng-init="field = fields[elem]">
+			<div class="animate" id="input-{{field.name}}" fieldname="{{elem}}" user="user" cbq-criteria-obj="criteria" directive-if="{'cbq': 'field.is_cbq === true'}" is-required="{{user[field.name].required}}" cbq>
+				<div class="question">
+					<p>{{field.name}} item is : {{user[field.name].value}}</p>
+				</div>
+				<div class="answer">
+					<generate-field field-type="{{field.type}}" user="user" field="field""></generate-field>
+				</div>
+				<div class="error">{{user[field.name].error_message}}</div>
 			</div>
-			<div class="answer">
-				<generate-field field-type="{{field.type}}" user="user" field="field""></generate-field>
-			</div>
-			<div class="error">{{user[field.name].error_message}}</div>
 		</div>
+		<submit-btn text="submit btn"></submit-btn>
 	</div>
-	<div>dirty: {{myForm.$dirty}}</div>
-	<div>pristine: {{myForm.$pristine}}</div>
-	<div>valid: {{myForm.$valid}}</div>
-	<button ng-click="click()">Submit</button>
 </form>

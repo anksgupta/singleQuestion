@@ -13,7 +13,6 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 		init: function(options){
 			angular.extend(this, defaults, options);
 			var self = this;
-			this.current = 0;
 			
 			if(this.steps === 0)
 				this.steps = this.order.length;
@@ -34,12 +33,15 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 		isValidField: function(fieldName){	// method to validate individual field, fieldName is passed as parameter
 			var result = true, deferred = $q.defer();
 			
-			if(!InitializationService.getUserData(fieldName)) {	// check if field value is empty
+			InitializationService.clearRequiredFieldMsg(fieldName);
+			if(InitializationService.getUserData(fieldName).indexOf(null) > -1 && InitializationService.getIsRequired(fieldName)) {	// check if field value contains a null value & is required.
 				if(InitializationService.getIsCBQ(fieldName)) {		// check if field is CBQ
-					if(InitializationService.getIsVisible(fieldName)){		// CBQ field is VISIBLE then only it is considered as NOT valid 
+					if(InitializationService.getIsVisible(fieldName)){		// CBQ field is VISIBLE, then only it is considered as NOT valid
+						InitializationService.setRequiredFieldMsg(fieldName);
 						result = false;
 					}	
 				} else {	// field is not CBQ then it is not valid as field is empty
+					InitializationService.setRequiredFieldMsg(fieldName);
 					result = false
 				}
 				deferred.resolve(result);
@@ -95,8 +97,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 								self.callbacks['after_next'].call(self)
 						});
 					}else if(self.autoSubmit){
-						if(typeof self.callbacks['submit'] === 'function')
-							self.callbacks['submit'].call(self)
+						$rootScope.$emit('singleQuestionSubmit');
 					}
 				}
 			})
@@ -128,6 +129,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 					elementsToShow.push(currentStep[i])
 				}
 			}
+			
 			this.setProgressBarWidth();
 			this.stepDirection = stepDirection;
 			$rootScope.$emit('currentUpdated', {
@@ -155,7 +157,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 				if(InitializationService.getIsCBQ(fieldName)){
 					CBQService.getCBQData(fieldName)
 						.then(function(data){
-							if(data){
+							/*if(data){
 								InitializationService.setIsVisible(fieldName, true);
 								// if CBQ field is valid resolve deferred object with "is-cbq" string
 								deferredItemList.resolve("is-cbq")
@@ -163,7 +165,10 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 								InitializationService.setIsVisible(fieldName, false);
 								// if CBQ field is Not valid resolve deferred object with "cbq-hidden" string
 								deferredItemList.resolve("cbq-hidden")
-							}
+							}*/
+							// If CBQ field is valid, resolve deferred object with "is-cbq" string else resolve with "cbq-hidden" string
+							InitializationService.setIsVisible(fieldName, data)[(data ? 'clearCbq': 'setCbq') + 'NotShown'](fieldName);
+							deferredItemList.resolve(data ? "is-cbq" : "cbq-hidden")
 						}, function(data){
 							//----- remove/update code once CBQService is in place
 							if(data){
@@ -207,13 +212,13 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 			})
 		},
 		getCBQVisibleFieldObj: function(){
-		// returns Array of visible field object
+			// returns Array of visible field object
 			var step = this.order[this.current], visibleFieldArr = [];
 			for(var i = 0; i < step.length; i++){
 				if(InitializationService.getIsVisible(step[i])){
 					visibleFieldArr.push({
 						name: step[i],
-						type: InitializationService.getFieldType(step[i])
+						type: InitializationService.getFieldType(step[i]).toLowerCase()
 					})
 				}
 			}

@@ -1,32 +1,4 @@
-(function() {
-	if (!Array.prototype.map) {
-		Array.prototype.map = function(callback, thisArg) {
-			var T, A, k;
-			if (this == null)
-				throw new TypeError(" this is null or not defined")
-			var O = Object(this);
-			var len = O.length >>> 0;
-			if (typeof callback !== "function")
-				throw new TypeError(callback + " is not a function")
-			if (thisArg)
-				T = thisArg
-			A = new Array(len);
-			k = 0;
-			while (k < len) {
-				var kValue, mappedValue;
-				if (k in O) {
-					kValue = O[k];
-					mappedValue = callback.call(T, kValue, k, O);
-					A[k] = mappedValue;
-				}
-				k++;
-			}
-			return A;
-		};
-	}
-}())
-
-var mainApp = angular.module('mainApp', ['ui.router']);
+var mainApp = angular.module('mainApp', ['ui.router', 'oc.lazyLoad']);
 
 mainApp.constant('myConfig', {
     templateConfig: {
@@ -42,20 +14,56 @@ mainApp.constant('myConfig', {
 	}
 });
 
-mainApp.config(['$locationProvider', '$stateProvider', '$urlRouterProvider', function($locationProvider, $stateProvider, $urlRouterProvider) {
-	$locationProvider.html5Mode(true);
-	//$urlRouterProvider.otherwise('/landing.do');
-	$stateProvider
-		.state('prequal', {
-			url: "/index.html",
-			templateUrl: "templates/landing.html",
-			controller: 'prequalController'
-		})
-		.state('increment', {
-			url: "/increment.do",
-			templateUrl: "templates/increment.html",
-			controller: 'incrementController'
-		})
+mainApp.config(['$locationProvider', '$stateProvider', '$urlRouterProvider', '$ocLazyLoadProvider',
+	function($locationProvider, $stateProvider, $urlRouterProvider, $ocLazyLoadProvider) {
+		$locationProvider.html5Mode(true);
+		//$urlRouterProvider.otherwise('/landing.do');
+		
+		$ocLazyLoadProvider.config({
+			debug: false,
+			events: false,
+			modules: [
+				{
+					name: 'lazy_autosize',
+					files: [
+						'app/libs/autosize/dist/autosize.js',
+						'app/libs/angular-autosize.js'
+					],
+					serie: true
+				}
+			]
+		});
+		
+		$stateProvider
+			/*.state('prequal', {
+				url: "/index.html",
+				templateUrl: "templates/landing.html",
+				controller: 'prequalController',
+				resolve: {
+					deps: ['$ocLazyLoad', function($ocLazyLoad) {
+						return $ocLazyLoad.load([
+							'app/prequalController.js'
+						]);
+					}]
+				}
+			})*/
+			.state('increment', {
+				url: "/index.html",
+				templateUrl: "templates/increment.html",
+				controller: 'incrementController',
+				resolve: {
+					deps: ['$ocLazyLoad', function($ocLazyLoad) {
+						return $ocLazyLoad.load([
+							'app/incrementController.js'
+						]);
+					}]
+				}
+			})
+			/*.state('prequal', {
+				url: "/index.html",
+				templateUrl: "templates/thankyou.html",
+				controller: 'tyController'
+			})*/
 }]);
 
 function init(json){

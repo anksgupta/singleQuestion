@@ -1,4 +1,5 @@
-mainApp.controller('prequalController', ['$scope', '$q', 'HttpService', 'InitializationService', 'RouterService', function($scope, $q, HttpService, InitializationService, RouterService){
+// Always get the module reference rather than using the existing app reference. If you use the existing app reference, then it gives an error if you try and load the controller using ocLazyLoad.
+angular.module('mainApp').controller('prequalController', ['$scope', '$q', 'HttpService', 'InitializationService', 'RouterService', function($scope, $q, HttpService, InitializationService, RouterService){
 	var data = RouterService.getRouteData();
 	angular.extend($scope, InitializationService.initialize(data));
 	
@@ -16,19 +17,21 @@ mainApp.controller('prequalController', ['$scope', '$q', 'HttpService', 'Initial
 				})
 				return deferred.promise;
 			},
-			"HighSchoolGradYear" : function(){
+			"HighSchoolGradYear": function(){
 				var deferred = $q.defer();
 				(($scope.user["HighSchoolGradYear"].value.toString().length === 4) ?  deferred.resolve(true) :  deferred.resolve(false));
 				return deferred.promise;
+			},
+			"WP": function(){
+				var deferred = $q.defer();
+				deferred.resolve(true);
+				console.log('WP');
+				return deferred.promise
 			}
 		},
 		callbacks: {
 			'before_next': function(){
 				
-			},
-			'submit': function(callback){
-				var responsePromise = HttpService.getData("/angularjs-examples/json-test-data.jsp", $scope.user);
-				return responsePromise;
 			}
 		}
 	}

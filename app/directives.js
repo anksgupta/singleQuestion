@@ -14,6 +14,55 @@ mainApp.directive('generateField', ['myConfig', '$compile', function(myConfig, $
 		}
 }]);
 
+// Tracking Directive 
+mainApp.directive('tracker', ['TrackingService', function(TrackingService) {
+		return {
+			restrict: 'E',
+			scope: {
+				user: '='
+			},
+			link: function (scope, element, attrs) {
+				for(var key in scope.user){
+					(function(key){
+						scope.$watch('user.' + key + '.value', function(newValue, oldValue) {
+							if(newValue !== oldValue){
+								TrackingService.log({
+									eventType: 'elem-change',
+									position: key + '_' + newValue
+								})
+							}
+						}, true);
+					}(key))
+				}
+			}
+		}
+}]);
+
+// Common SL Directive 
+mainApp.directive('commonSl', ['$httpParamSerializer', function($httpParamSerializer) {
+		return {
+			restrict: 'E',
+			scope: {
+				slId: '@',
+				domain: '@',
+				params: '=',
+				errorCallback: '&?'
+					//'&' = callback function is defined always.
+					//'&?' = callback function is defined only when attribute is defined in html template.
+			},
+			template: '<div id="{{slId}}" class="cachedWidget qs-listings"></div>',
+			link: function (scope, element, attrs) {
+				var slScript = document.createElement('script'), errorFn = '';
+				if(typeof scope.errorCallback === 'function'){
+					window[scope.slId.replace(/-|_/gi, '')] = scope.errorCallback;
+					errorFn = '&errorCallback=' + scope.slId.replace(/-|_/gi, '')
+				}
+				slScript.src = scope.domain + (scope.domain.indexOf('?') > -1 ? '' : '?') + $httpParamSerializer(scope.params) + errorFn;
+				element.append(slScript);
+			}
+		}
+}]);
+
 // Directive which checks if inner content has loaded
 mainApp.directive('elemReady', ['$rootScope', 'NotificationService', function($rootScope, NotificationService) {
 		return {
@@ -109,7 +158,7 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', '$rootSco
 }]);
 
 // TCPA directive
-mainApp.directive("homePhoneConsent",['NotificationService', function(NotificationService){
+mainApp.directive("homePhoneConsent",[function(){
 	return {
 		restrict: 'E',
 		scope: {
@@ -275,7 +324,7 @@ mainApp.directive("customSelect", function(){
 	    link: function(scope, element, attrs) {
 			var fieldName = scope.field.name;
 			scope.updateModel = function(value) {
-				if(scope.user[fieldName].value == value)
+				if(scope.user[fieldName].value === value)
 					scope.user[fieldName].unchanged = new Date().getTime()  // flag to handle a case in which user clicks on the same option and shownext should be called
                 scope.user[fieldName].value = value;
             }
@@ -340,7 +389,8 @@ mainApp.directive('directiveIf', ['$compile',
         };
 }]);
 
-mainApp.directive('cbq', ['CBQService', function(CBQService){
+// CBQ directive to handle criteria on contact & increment pages
+mainApp.directive('cbq', ['InitializationService', 'CBQService', function(InitializationService, CBQService){
 	return {
 		restrict: 'A',
 		scope: {
@@ -354,7 +404,9 @@ mainApp.directive('cbq', ['CBQService', function(CBQService){
 				scope.$watchCollection(function(){return scope.user[parent]}, function(newValue, oldValue) {
 					CBQService.getCBQData(scope.fieldname)
 						.then(function(data){
-							data ? element.removeClass('ng-hide') : element.addClass('ng-hide');
+							element[(data ? 'remove' : 'add') + 'Class']('ng-hide');
+							InitializationService[(data ? 'clearCbq': 'setCbq') + 'NotShown'](scope.fieldname);
+							InitializationService.setIsVisible(scope.fieldname, data)
 						}, function(data){
 							console.log('ajax failed - promise rejected')
 							false ? element.removeClass('ng-hide') : element.addClass('ng-hide');
@@ -365,18 +417,74 @@ mainApp.directive('cbq', ['CBQService', function(CBQService){
 	}
 }]);
 
+/**
+*	@params
+*	validateBeforeSubmit: Contains reference to a function which you want to execute before form is submitted.
+*	emittedEvent: If you want to manually submit a form, then pass the eventname to this directive. When this event is emitted, the form will be submitted. One scenario is the auto submit case in singlequestion.
+*/
+mainApp.directive('submitBtn', ['HttpService', '$rootScope', 'InitializationService', 'RouterService', 'SingleQuestion', function(HttpService, $rootScope, InitializationService, RouterService, SingleQuestion){
+	return {
+		restrict: 'E',
+		scope: {
+			text: '@',
+			validateBeforeSubmit: '&?',
+			emittedEvent: '@',
+			url: '@'
+		},
+		template: '<button id="submitBtn" ng-click="submit()">' + 
+					'<span>{{text}}</span>' +
+					'<span class="processing">Processing...</span></button>',
+		link: function link(scope, element, attrs) {
+			var url = scope.url ? ('/' + scope.url.replace(/.do|\//, '') + '.do') : '/submit.do',
+				validateBeforeSubmit = (typeof scope.validateBeforeSubmit === 'function') ? scope.validateBeforeSubmit : InitializationService.validateFields;
+			function submitForm(){
+				HttpService.getData(url, InitializationService.getFinalUserData()).then(function(json){
+					RouterService.navigate(json)
+				}, function(json){
+					//RouterService.navigate(json)
+				})
+			}
+			
+			scope.submit = function() {
+				validateBeforeSubmit().then(function(result){
+					if(result)
+						submitForm()
+				})
+            };
+			
+			if(scope.emittedEvent){
+				$rootScope.$on(scope.emittedEvent, function(event, args){
+					scope.submit()
+				});
+			}
+	    }
+	}
+}]);
+
 // SingleQuestion directive
-mainApp.directive('singleQuestionDirective',['$rootScope', 'SingleQuestion', 'SingleQStepVisibilityService' ,'NotificationService', function($rootScope, SingleQuestion, SingleQStepVisibilityService, NotificationService) {
+mainApp.directive('singleQuestionDirective',['$rootScope', 'SingleQuestion', 'SingleQStepVisibilityService', 'NotificationService', function($rootScope, SingleQuestion, SingleQStepVisibilityService, NotificationService) {
 	return {
         restrict: 'E',
         scope: {
 			user: '=',
 			singleQuestionOptions: '='
 		},
+		// The parenthesis after isValidSingleQuestionStep is V.V.V.V.V.V.V.V.V.V Imp. Without the parenthesis, the function we pass will never get called.
+		// This might be because we are passing the function reference to a nested directive. PLEEEEEEEEASE LOOK INTO THIS.
 		template: '<a href="javascript:;" id="backBtn" ng-click="showPrevious();">Back</a>' +
 				'<button id="nextBtn" ng-click="showNext();">Next</button>' +
-				'<button id="submitBtn" ng-click="">Submit</button>' +
+				'<submit-btn text="submit btn" validate-before-submit="isValidSingleQuestionStep()" emitted-event="singleQuestionSubmit"></submit-btn>' +
 				'<div class="rail"><div class="inner_rail"><div class="bar" ng-style="{\'width\': progressBarWidth + \'%\'}"></div></div></div>',
+		controller: ['$scope', function($scope){
+			var singleQFunctionsToExpose = ['showNext', 'showPrevious', 'isValidSingleQuestionStep'];
+			for(var  i = 0; i < singleQFunctionsToExpose.length; i++){
+				(function(i){
+					$scope[singleQFunctionsToExpose[i]] = function(){
+						return SingleQuestion[singleQFunctionsToExpose[i]]()
+					}
+				}(i))
+			}
+		}],
         link: function(scope, element, attrs){
 			var nextBtnElem = angular.element(document.getElementById('nextBtn')), 
 				backBtnElem = angular.element(document.getElementById('backBtn')), 
@@ -402,14 +510,6 @@ mainApp.directive('singleQuestionDirective',['$rootScope', 'SingleQuestion', 'Si
 					}
 				};
 			
-			scope.showNext = function(){
-				SingleQuestion.showNext()
-			};
-			
-			scope.showPrevious = function(){
-				SingleQuestion.showPrevious()
-			};
-			
 			$rootScope.$on('currentUpdated', function(event, args){
 				// update current and validate next step
 				showNextBtn();
@@ -425,12 +525,15 @@ mainApp.directive('singleQuestionDirective',['$rootScope', 'SingleQuestion', 'Si
 			});
 			
 			NotificationService.subscribe('singleQuestionInitialized', function(event, args){
+				var typesToIgnore = 'text|checkbox';
 				SingleQuestion.init(scope.singleQuestionOptions);
 				for(var i = 0;i < SingleQuestion.order.length; i++){
 					var step = SingleQuestion.order[i];
 					for(var j = 0;j < step.length; j++){
+						// Here newValue & oldValue comparison should be string comparison.
 						scope.$watch('user.' + step[j] + '.value', function(newValue, oldValue) {
-							if(newValue !== oldValue && SingleQuestion.getCBQVisibleFieldObj().length === 1){
+							if((newValue !== oldValue) && (SingleQuestion.getCBQVisibleFieldObj().length === 1)
+													 && typesToIgnore.indexOf(SingleQuestion.getCBQVisibleFieldObj()[0].type) === -1){
 								// if current order has only one field visible then call ShowNext on change of model update
 								SingleQuestion.showNext()
 							}

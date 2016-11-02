@@ -1,4 +1,5 @@
 mainApp.factory("CBQService", ['HttpService', '$q', function(HttpService, $q){
+	// We haven't injected InitializationService & used getUserData(instead we are passing it as a parameter) because then there will be a cyclic dependency as we inject CBQService in InitializationService.
 	var CBQServiceData = {}, fieldsObjCopy;
 	return {
 		setCBQServiceData: function(scopeFieldObj){
@@ -10,14 +11,15 @@ mainApp.factory("CBQService", ['HttpService', '$q', function(HttpService, $q){
 		},
 		getCBQData: function(fieldName){
 			var deferred = $q.defer(), postDataObj = {}, keys = [], parentArr = [], criteriaObj = CBQServiceData.cbq[fieldName],
-				isCBA = this.isCBA(criteriaObj), fieldsCount = CBQServiceData.fields[fieldName].options.length, hiddenOptionsCount = 0;
+				isCBA = this.isCBA(criteriaObj), fieldsCount = CBQServiceData.fields[fieldName].options.length, hiddenOptionsCount = 0, fieldVal;
 			if(isCBA) {
 				for(var i = 0; i < criteriaObj.a.length; i++){
 					keys.push(criteriaObj.a[i].k);
 					for(var j = 0; j < criteriaObj.a[i].p.length; j++){
+						fieldVal = CBQServiceData.getUserData(criteriaObj.a[i].p[j]);
 						if(parentArr.indexOf(criteriaObj.a[i].p[j]) === -1){
 							parentArr.push(criteriaObj.a[i].p[j]);
-							postDataObj[criteriaObj.a[i].p[j]] = CBQServiceData.getUserData(criteriaObj.a[i].p[j])
+							postDataObj[criteriaObj.a[i].p[j]] = (fieldVal.indexOf(null) > -1) ? '' : fieldVal.join('')
 						}
 					}
 				}
@@ -25,10 +27,11 @@ mainApp.factory("CBQService", ['HttpService', '$q', function(HttpService, $q){
 			}else {
 				postDataObj['key'] = criteriaObj.k;
 				angular.forEach(criteriaObj.p, function(fieldName, index){
-					postDataObj[fieldName] = CBQServiceData.getUserData(fieldName);
+					fieldVal = CBQServiceData.getUserData(fieldName);
+					postDataObj[fieldName] = (fieldVal.indexOf(null) > -1) ? '' : fieldVal.join('')
 				});
 			}
-			HttpService.getData('/CBQValidator.jsp',postDataObj).then(function(data){
+			HttpService.getData('/CBQValidator.jsp', postDataObj).then(function(data){
 				deferred.resolve(true);
 			},function(data){
 				if(isCBA){
@@ -43,6 +46,7 @@ mainApp.factory("CBQService", ['HttpService', '$q', function(HttpService, $q){
 							hiddenOptionsCount++;
 						}
 					}
+					// Below case ensures that if all the options are hidden for a CBA question, then hide that question
 					(fieldsCount > hiddenOptionsCount) ? deferred.resolve(true) : deferred.resolve(false);
 				}else{
 					deferred.resolve(true);
