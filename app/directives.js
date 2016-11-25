@@ -1,5 +1,5 @@
 // Directive which dynamically creates form fields based on the input type
-mainApp.directive('generateField', ['myConfig', '$compile', function(myConfig, $compile) {
+mainApp.directive('generateField', ['MyConfig', '$compile', function(MyConfig, $compile) {
 		return {
 			restrict: 'E',
 			scope: {
@@ -8,7 +8,7 @@ mainApp.directive('generateField', ['myConfig', '$compile', function(myConfig, $
 				field: '='
 			},
 			link: function (scope, element, attrs) {
-				var template = "<" + myConfig.templateConfig[scope.fieldType] + " user='user' field='field'></" + myConfig.templateConfig[scope.fieldType] + ">";
+				var template = "<" + MyConfig.TEMPLATE_CONFIG[scope.fieldType] + " user='user' field='field'></" + MyConfig.TEMPLATE_CONFIG[scope.fieldType] + ">";
 				element.append($compile(template)(scope))
 			}
 		}
@@ -76,7 +76,7 @@ mainApp.directive('elemReady', ['$rootScope', 'NotificationService', function($r
 					}
 				});
 				elem.ready(function(){
-					$rootScope.$emit(eventsArr[0])
+					$rootScope.$emit(eventsArr[0]);
 					// need to check alternative. remove apply and check the timing issue - WP,HP watchers not getting fired on elem.ready()
 					scope.$apply();
 				});
@@ -86,7 +86,7 @@ mainApp.directive('elemReady', ['$rootScope', 'NotificationService', function($r
 }])
 
 // Home phone directive
-mainApp.directive("phoneField", ['TcpaService', 'NotificationService', '$rootScope', function(TcpaService, NotificationService, $rootScope){
+mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'InitializationService', '$rootScope', function(TcpaService, NotificationService, InitializationService, $rootScope){
 	return {
 		restrict: 'E',
 		replace: true,
@@ -108,15 +108,16 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', '$rootSco
 				var fieldName = scope.field.name, prefixElem, numberElem;
 				if(scope.field.is_single_col){
 					scope.singlePhoneNumber = {};
-						scope.singlePhoneNumber.value = scope.user[fieldName].value[fieldName + "_AREA"] + 
+					scope.singlePhoneNumber.value = scope.user[fieldName].value[fieldName + "_AREA"] + 
 										scope.user[fieldName].value[fieldName + "_PREFIX"] +
 										scope.user[fieldName].value[fieldName + "_NUMBER"];
 										
 					scope.$watch('singlePhoneNumber.value', function(newValue, oldValue) {
-						var phoneNumber = newValue.replace(/[^0-9]/g, '');
+						var phoneNumber = newValue.replace(/[^0-9]/g, ''),
+							contactMe = InitializationService.getUserData('ContactMe');
 						TcpaService.handleTCPA({
 								number: phoneNumber, 
-								contactMe: true,
+								contactMe: (contactMe.indexOf(null) > -1) ? false : contactMe.join(''),
 								fieldName: fieldName
 							}).then(function(){
 								NotificationService.notify('repeatComplete');
@@ -134,17 +135,18 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', '$rootSco
 					numberElem = document.getElementById(fieldName + '_NUMBER');
 										
 					scope.$watch('[area.value, prefix.value, number.value]', function(newValues, oldValues) {
-						var phoneNumber = scope.area.value + scope.prefix.value + scope.number.value;
+						var phoneNumber = scope.area.value + scope.prefix.value + scope.number.value,
+							contactMe = InitializationService.getUserData('ContactMe');
 						TcpaService.handleTCPA({
 								number: phoneNumber, 
-								contactMe: true,
+								contactMe: (contactMe.indexOf(null) > -1) ? false : contactMe.join(''),
 								fieldName: fieldName
 							}).then(function(){
 								NotificationService.notify('repeatComplete');
 							});
-						if (newValues[0] !== oldValues[0] && (newValues[0].length === 3)){ //Check if area is changed & length === maxlength, then move cursor to prefix field
+						if (newValues[0] !== oldValues[0] && (newValues[0].length === 3)){ // Check if area is changed & length === maxlength, then move cursor to prefix field
 							prefixElem.focus();
-						}else if (newValues[1] !== oldValues[1] && (newValues[1].length === 3)){ //Check if prefix is changed & length === maxlength, then move cursor to number field
+						}else if (newValues[1] !== oldValues[1] && (newValues[1].length === 3)){ // Check if prefix is changed & length === maxlength, then move cursor to number field
 							numberElem.focus();
 						}
 						scope.user[fieldName].value[fieldName + "_AREA"] = newValues[0];
@@ -158,7 +160,7 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', '$rootSco
 }]);
 
 // TCPA directive
-mainApp.directive("homePhoneConsent",[function(){
+mainApp.directive("homePhoneConsent",['InitializationService', 'TcpaService', function(InitializationService, TcpaService){
 	return {
 		restrict: 'E',
 		scope: {
@@ -179,12 +181,38 @@ mainApp.directive("homePhoneConsent",[function(){
 						'</label>' + 
 					'</div>',
 		link: function(scope, element, attrs){
+			// HomePhoneConsent field is hidden/shown coz of ng-hide class(!important).
 			scope.$on('ShowPhoneConsent', function(event, args){
-				element[(args.showConsent ? 'remove' : 'add') + 'Class']('ng-hide');
-				if(scope.field.type !== 'Checkbox'){
+				var consentContainer = document.getElementById('input-HomePhoneConsent');
+				if(consentContainer)
+					angular.element(consentContainer)[(args.showConsent ? 'remove' : 'add') + 'Class']('ng-hide')
+				
+				InitializationService.setIsVisible('HomePhoneConsent', args.showConsent);
+				
+				if(scope.field.type !== 'Checkbox') {
 					scope.user['HomePhoneConsent'].value = (args.showConsent ? 'Yes' : '')
 				}
-			})
+			});
+			
+			// Below code handles TCPA for contact/increment page.
+			if(InitializationService.getFieldType('HP') === 'Hidden' || InitializationService.getFieldType('WP') === 'Hidden') {
+				var phoneVal = {
+					HP: (InitializationService.getUserData('HP').indexOf(null) > -1) ? '' : InitializationService.getUserData('HP').join(''),
+					WP: (InitializationService.getUserData('WP').indexOf(null) > -1) ? '' : InitializationService.getUserData('WP').join('')
+				}, contactMe = InitializationService.getUserData('ContactMe');
+				
+				for(var key in phoneVal) {
+					if(phoneVal[key].length === 10) {
+						TcpaService.handleTCPA({
+								number: phoneVal[key], 
+								contactMe: (contactMe.indexOf(null) > -1) ? false : contactMe.join(''),
+								fieldName: key
+							}).then(function(){
+								//NotificationService.notify('repeatComplete');
+							});
+					}
+				}
+			}
 		}
 	}
 }]);
@@ -197,7 +225,7 @@ mainApp.directive("selectField", function(){
 			user: '=',
 			field: '='
 		},
-		template: '<select name="qs-{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options"><option value="" hidden>-- Select One --</option></select>' +
+		template: '<select name="qs-{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options">' + '<option value="" hidden>-- Select One --</option></select>' +
 		'<field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>'
 	}
 });
@@ -225,10 +253,12 @@ mainApp.directive("textField", function(){
 			user: '=',
 			field: '='
 		},
-		template: '<div>' + 
-					'<input name="qs-{{field.name}}" ng-model="user[field.name].value"/>' + 
-					'<field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>' + 
-				'</div>',
+		// ng-model-options are passed so that model will be updated only when the focus is lost.
+		template: 
+			'<div>' + 
+				'<input name="qs-{{field.name}}" ng-model="user[field.name].value" ng-model-options="{\'updateOn\': \'blur\'}"/>' + 
+				'<field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>' + 
+			'</div>',
 		link: function(scope, element, attrs){}
 	}
 });
@@ -530,14 +560,18 @@ mainApp.directive('singleQuestionDirective',['$rootScope', 'SingleQuestion', 'Si
 				for(var i = 0;i < SingleQuestion.order.length; i++){
 					var step = SingleQuestion.order[i];
 					for(var j = 0;j < step.length; j++){
-						// Here newValue & oldValue comparison should be string comparison.
-						scope.$watch('user.' + step[j] + '.value', function(newValue, oldValue) {
-							if((newValue !== oldValue) && (SingleQuestion.getCBQVisibleFieldObj().length === 1)
-													 && typesToIgnore.indexOf(SingleQuestion.getCBQVisibleFieldObj()[0].type) === -1){
-								// if current order has only one field visible then call ShowNext on change of model update
-								SingleQuestion.showNext()
-							}
-						});
+						(function(field){
+							scope.$watch('user.' + field + '.value', function(newValue, oldValue) {
+								var conditionArray = [!angular.equals(newValue, oldValue),
+														SingleQuestion.getCBQVisibleFieldObj().length === 1,
+														typesToIgnore.indexOf(SingleQuestion.getCBQVisibleFieldObj()[0].type) === -1,
+														newValue !== "CBQ_NOT_SHOWN" && oldValue !== "CBQ_NOT_SHOWN"];
+								if(eval(conditionArray.join('&&'))){
+									// If current order has only one visible field, then call ShowNext on model update.
+									SingleQuestion.showNext()
+								}
+							});
+						}(step[j]))
 					}			
 				}
 			});

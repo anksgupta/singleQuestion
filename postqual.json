@@ -1,723 +1,744 @@
 {
-  "status": "success",
-  "client": {
-    "vkey": 10132,
-    "dkey": 10177,
-    "name": "Kaplan University",
-    "logo": "\/imageserver\/logos\/200x100\/200x100_kaplan-university.gif",
-    "status": "Impression",
-    "has_campus": false,
-    "has_dtsp": false,
-    "has_blurb": true,
-    "has_ipeds": false,
-    "is_default": false,
-    "blurb": {
-      "is_rich": true,
-      "content": "<ul>\r\n\t<li>\r\n\t\tRanked among the Best Online Bachelor&rsquo;s Programs in 2015 by U.S. News and World Report.<\/li>\r\n\t<li>\r\n\t\tLets undergrad students try classes before paying any tuition.<\/li>\r\n\t<li>\r\n\t\tHas an average class sizes of 18 for undergraduate and 13 for graduate-level courses.<\/li>\r\n\t<li>\r\n\t\tOffers numerous scholarship opportunities that can help students save up to $750 per term on their tuition.<\/li>\r\n\t<li>\r\n\t\tTends to educate degree-seeking online and campus-based students who are adult learners with families and students who work while pursuing higher education.<\/li>\r\n<\/ul>\r\n"
-    }
-  },
-  "form": {
-    "name": "chainForm",
-    "cbq": "({'LicensedNurse':{o:10630,k:368081510,p:['ProgramOfInterest'],e:false,r:true}})",
-    "tcpa": {
-      "required": false
-    },
-    "fields": {
-      "submit": {
-        "name": "submit",
-        "type": "Submit",
-        "is_cbq": false,
-        "value": "submit",
-        "is_hidden": false,
-        "is_required": true,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "TrafficSource": {
-        "name": "TrafficSource",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "22",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "LeadSiteURL": {
-        "name": "LeadSiteURL",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "http:\/\/www.worldwidelearn.com\/index.do?VKEY=10132",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "SourceProgramKey": {
-        "name": "SourceProgramKey",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "0",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "CreativeId": {
-        "name": "CreativeId",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "0",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "IsBrandedEmailCreative": {
-        "name": "IsBrandedEmailCreative",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "N",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "AreaID": {
-        "name": "AreaID",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "0",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "Citizenship": {
-        "name": "Citizenship",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "Yes",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "Age": {
-        "name": "Age",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "24",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "HighSchoolGradYear": {
-        "name": "HighSchoolGradYear",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "2006",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "LN": {
-        "name": "LN",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "test",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "S1": {
-        "name": "S1",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "test",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "HP": {
-        "name": "HP",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "6505786496",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "DeviceType": {
-        "name": "DeviceType",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "Desktop",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "ApplyLeadSplitMax": {
-        "name": "ApplyLeadSplitMax",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "False",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "EducationLevel": {
-        "name": "EducationLevel",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "Associate's Degree",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "EM": {
-        "name": "EM",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "test@24june2.com",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "FN": {
-        "name": "FN",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "test test",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "leadid_token": {
-        "name": "leadid_token",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": {
-          
-        },
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "DegreeStartTimeframe": {
-        "name": "DegreeStartTimeframe",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "Less than 1 month",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "Military": {
-        "name": "Military",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "None",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "WP": {
-        "name": "WP",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "SiteVersion": {
-        "name": "SiteVersion",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "FormsOne",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "IPAddress": {
-        "name": "IPAddress",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "172.16.156.107",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "PubWebSiteName": {
-        "name": "PubWebSiteName",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "www.worldwidelearn.com",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "filterAllPOI": {
-        "name": "filterAllPOI",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "false",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "CollegeCreditsEarned": {
-        "name": "CollegeCreditsEarned",
-        "type": "Hidden",
-        "label": "",
-        "is_cbq": false,
-        "value": "No",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "CurrentlyEmployed": {
-        "name": "CurrentlyEmployed",
-        "type": "Hidden",
-        "label": "",
-        "is_cbq": false,
-        "value": "Part-Time",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "YearsWorkExperience": {
-        "name": "YearsWorkExperience",
-        "type": "Hidden",
-        "label": "",
-        "is_cbq": false,
-        "value": "2-3 years",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "_Supress_Page_Flag": {
-        "name": "_Supress_Page_Flag",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "true",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "STATUS": {
-        "name": "STATUS",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "0",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "WebSiteName": {
-        "name": "WebSiteName",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "WWW.GUIDETOHIGHERED.COM",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "TargusEnrollScore:137350": {
-        "name": "TargusEnrollScore:137350",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "10",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "TargusEnrollScore:10131": {
-        "name": "TargusEnrollScore:10131",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "500",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "TargusEnrollScore:10137": {
-        "name": "TargusEnrollScore:10137",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "400",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "TargusEnrollScore:60570": {
-        "name": "TargusEnrollScore:60570",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "0.00493",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "TargusEnrollScore:1020930": {
-        "name": "TargusEnrollScore:1020930",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "0.00020",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "ProgramOfInterest": {
-        "name": "ProgramOfInterest",
-        "type": "Select",
-        "label": "What is your program of interest?",
-        "is_cbq": false,
-        "value": "BUSINESS",
-        "is_hidden": false,
-        "is_required": true,
-        "is_valid": true,
-        "error_message": "",
-        "options": [
-          {
-            "is_group": true,
-            "is_qual": false,
-            "label": "Other Programs Offered at this School",
-            "type": "other",
-            "value": "",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Health Information Management",
-            "value": "BSHIT",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Health Science",
-            "value": "BSHS",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Health and Wellness",
-            "value": "BSHW",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Human Services",
-            "value": "BSHSV",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Human Services - Child and Family Welfare",
-            "value": "BSHUS_CFW",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Human Services - Gerontology",
-            "value": "BSHUS_G",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Human Services - Human Services Administration",
-            "value": "BSHUS_HSA",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Legal Studies",
-            "value": "BSLS",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Liberal Studies",
-            "value": "BSLIS",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Liberal Studies Leadership",
-            "value": "BSLISLLS",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Nutrition Science",
-            "value": "BSNS",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Paralegal Studies",
-            "value": "BSPS",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Psychology",
-            "value": "BSPYS",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Psychology - Applied Behavior Analysis Emphasis Area",
-            "value": "BSPY_ABA",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Psychology - Child Development",
-            "value": "BSPY_CD",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BS in Psychology - Substance Addictions",
-            "value": "BSPY_SA",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BSBA - Investment\t\t\t",
-            "value": "KCBSBA_INV",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BSIT\/ Information  Systems Track - Multiplatform Software Development",
-            "value": "BSSD",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "BSPY - Industrial\/Organizational Psychology\t\t\t",
-            "value": "KBSPY_IOP",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "CCAF  - Associate to Baccalaureate Cooperative Program (AUABC) (Military Only)",
-            "value": "252_ABCP_BACH",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": true,
-            "is_qual": true,
-            "label": "Bachelor Completion and Bridge Degrees",
-            "value": "",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "Bachelors of Science in Nursing - RN to BSN",
-            "value": "BSN",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": true,
-            "is_qual": true,
-            "label": "Master's Degrees",
-            "value": "",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "Accelerated MS in Nursing",
-            "value": "RNMSN",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "MA in Teaching (for Aspiring Teachers Grades 5-12)",
-            "value": "MAT",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "MBA - Information Technology",
-            "value": "MBA_IT",
-            "selected": false
-          },
-          {
-            "type": "other",
-            "is_group": false,
-            "is_qual": false,
-            "label": "MS in Criminal Justice - Leadership\/Executive Management",
-            "value": "MSCJ_LEM",
-            "selected": false
-          }
-        ],
-        "has_condense": false
-      },
-      "LicensedNurse": {
-        "name": "LicensedNurse",
-        "type": "RadioInTable",
-        "label": "Do you have a valid, unencumbered U.S. RN license?",
-        "is_cbq": true,
-        "value": "",
-        "is_hidden": false,
-        "is_required": true,
-        "is_valid": true,
-        "error_message": "",
-        "options": [
-          {
-            "label": "<!--100-->Yes",
-            "selected": false,
-            "value": "Yes"
-          },
-          {
-            "label": "<!--110-->No",
-            "selected": false,
-            "value": "No"
-          }
-        ]
-      },
-      "BirthDate": {
-        "name": "BirthDate",
-        "type": "DateInput",
-        "label": "Date of Birth:",
-        "is_cbq": false,
-        "value": "",
-        "is_hidden": false,
-        "is_required": true,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "PC": {
-        "name": "PC",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "94404",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "CT": {
-        "name": "CT",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "SAN MATEO",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "SP": {
-        "name": "SP",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "CA",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
-      },
-      "CN": {
-        "name": "CN",
-        "type": "Hidden",
-        "is_cbq": false,
-        "value": "US",
-        "is_hidden": true,
-        "is_required": false,
-        "is_valid": true,
-        "error_message": ""
+   "status": "success",
+   "client": {
+      "vkey": 10132,
+      "dkey": 10177,
+      "name": "Kaplan University",
+      "logo": "/imageserver/logos/200x100/200x100_kaplan-university.gif",
+      "status": "Impression",
+      "has_campus": false,
+      "has_dtsp": false,
+      "has_blurb": true,
+      "has_ipeds": false,
+      "is_default": false,
+      "blurb": {
+         "is_rich": true,
+         "content": "<ul>\r\n\t<li>\r\n\t\tRanked among the Best Online Bachelor&rsquo;s Programs in 2015 by U.S. News and World Report.</li>\r\n\t<li>\r\n\t\tLets undergrad students try classes before paying any tuition.</li>\r\n\t<li>\r\n\t\tHas an average class sizes of 18 for undergraduate and 13 for graduate-level courses.</li>\r\n\t<li>\r\n\t\tOffers numerous scholarship opportunities that can help students save up to $750 per term on their tuition.</li>\r\n\t<li>\r\n\t\tTends to educate degree-seeking online and campus-based students who are adult learners with families and students who work while pursuing higher education.</li>\r\n</ul>\r\n"
       }
-    },
-    "order": [
-		["ProgramOfInterest"],
-		["LicensedNurse"]
-    ],
-    "is_valid": false,
-    "is_submitted": false
-  },
-  "vkey": 10132,
-  "page_name": "postqual"
+   },
+   "form": {
+      "name": "chainForm",
+      "cbq": "({'LicensedNurse':{o:10630,k:368081510,p:['ProgramOfInterest'],e:false,r:true}})",
+      "tcpa": {
+         "required": false
+      },
+      "fields": {
+         "submit": {
+            "name": "submit",
+            "type": "Submit",
+            "is_cbq": false,
+            "value": "submit",
+            "is_hidden": false,
+            "is_required": true,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "TrafficSource": {
+            "name": "TrafficSource",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "22",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "LeadSiteURL": {
+            "name": "LeadSiteURL",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "http://www.worldwidelearn.com/index.do?VKEY=10132",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "SourceProgramKey": {
+            "name": "SourceProgramKey",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "0",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "CreativeId": {
+            "name": "CreativeId",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "0",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "IsBrandedEmailCreative": {
+            "name": "IsBrandedEmailCreative",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "N",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "AreaID": {
+            "name": "AreaID",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "0",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "Citizenship": {
+            "name": "Citizenship",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "Yes",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "Age": {
+            "name": "Age",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "24",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "HighSchoolGradYear": {
+            "name": "HighSchoolGradYear",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "2006",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "LN": {
+            "name": "LN",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "test",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "S1": {
+            "name": "S1",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "test",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "HP": {
+            "name": "HP",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "6505786496",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "DeviceType": {
+            "name": "DeviceType",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "Desktop",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "ApplyLeadSplitMax": {
+            "name": "ApplyLeadSplitMax",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "False",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "EducationLevel": {
+            "name": "EducationLevel",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "Associate's Degree",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "EM": {
+            "name": "EM",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "test@24june2.com",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "FN": {
+            "name": "FN",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "test test",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "leadid_token": {
+            "name": "leadid_token",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": {},
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "DegreeStartTimeframe": {
+            "name": "DegreeStartTimeframe",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "Less than 1 month",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "Military": {
+            "name": "Military",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "None",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "WP": {
+            "name": "WP",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "SiteVersion": {
+            "name": "SiteVersion",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "FormsOne",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "IPAddress": {
+            "name": "IPAddress",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "172.16.156.107",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "PubWebSiteName": {
+            "name": "PubWebSiteName",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "www.worldwidelearn.com",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "filterAllPOI": {
+            "name": "filterAllPOI",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "false",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "CollegeCreditsEarned": {
+            "name": "CollegeCreditsEarned",
+            "type": "Hidden",
+            "label": "",
+            "is_cbq": false,
+            "value": "No",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "CurrentlyEmployed": {
+            "name": "CurrentlyEmployed",
+            "type": "Hidden",
+            "label": "",
+            "is_cbq": false,
+            "value": "Part-Time",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "YearsWorkExperience": {
+            "name": "YearsWorkExperience",
+            "type": "Hidden",
+            "label": "",
+            "is_cbq": false,
+            "value": "2-3 years",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "_Supress_Page_Flag": {
+            "name": "_Supress_Page_Flag",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "true",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "STATUS": {
+            "name": "STATUS",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "0",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "WebSiteName": {
+            "name": "WebSiteName",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "WWW.GUIDETOHIGHERED.COM",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "TargusEnrollScore:137350": {
+            "name": "TargusEnrollScore:137350",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "10",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "TargusEnrollScore:10131": {
+            "name": "TargusEnrollScore:10131",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "500",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "TargusEnrollScore:10137": {
+            "name": "TargusEnrollScore:10137",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "400",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "HP": {
+            "name": "HP",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "6505786496",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "TargusEnrollScore:1020930": {
+            "name": "TargusEnrollScore:1020930",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "0.00020",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "ProgramOfInterest": {
+            "name": "ProgramOfInterest",
+            "type": "Select",
+            "label": "What is your program of interest?",
+            "is_cbq": false,
+            "value": "BSHIT",
+            "is_hidden": false,
+            "is_required": true,
+            "is_valid": true,
+            "error_message": "",
+            "options": [
+               {
+                  "is_group": true,
+                  "is_qual": false,
+                  "label": "Other Programs Offered at this School",
+                  "type": "other",
+                  "value": "",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Health Information Management",
+                  "value": "BSHIT",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Health Science",
+                  "value": "BSHS",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Health and Wellness",
+                  "value": "BSHW",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Human Services",
+                  "value": "BSHSV",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Human Services - Child and Family Welfare",
+                  "value": "BSHUS_CFW",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Human Services - Gerontology",
+                  "value": "BSHUS_G",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Human Services - Human Services Administration",
+                  "value": "BSHUS_HSA",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Legal Studies",
+                  "value": "BSLS",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Liberal Studies",
+                  "value": "BSLIS",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Liberal Studies Leadership",
+                  "value": "BSLISLLS",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Nutrition Science",
+                  "value": "BSNS",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Paralegal Studies",
+                  "value": "BSPS",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Psychology",
+                  "value": "BSPYS",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Psychology - Applied Behavior Analysis Emphasis Area",
+                  "value": "BSPY_ABA",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Psychology - Child Development",
+                  "value": "BSPY_CD",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BS in Psychology - Substance Addictions",
+                  "value": "BSPY_SA",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BSBA - Investment\t\t\t",
+                  "value": "KCBSBA_INV",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BSIT/ Information  Systems Track - Multiplatform Software Development",
+                  "value": "BSSD",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "BSPY - Industrial/Organizational Psychology\t\t\t",
+                  "value": "KBSPY_IOP",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "CCAF  - Associate to Baccalaureate Cooperative Program (AUABC) (Military Only)",
+                  "value": "252_ABCP_BACH",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": true,
+                  "is_qual": true,
+                  "label": "Bachelor Completion and Bridge Degrees",
+                  "value": "",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "Bachelors of Science in Nursing - RN to BSN",
+                  "value": "BSN",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": true,
+                  "is_qual": true,
+                  "label": "Master's Degrees",
+                  "value": "",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "Accelerated MS in Nursing",
+                  "value": "RNMSN",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "MA in Teaching (for Aspiring Teachers Grades 5-12)",
+                  "value": "MAT",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "MBA - Information Technology",
+                  "value": "MBA_IT",
+                  "selected": false
+               },
+               {
+                  "type": "other",
+                  "is_group": false,
+                  "is_qual": false,
+                  "label": "MS in Criminal Justice - Leadership/Executive Management",
+                  "value": "MSCJ_LEM",
+                  "selected": false
+               }
+            ],
+            "has_condense": false
+         },
+         "LicensedNurse": {
+            "name": "LicensedNurse",
+            "type": "RadioInTable",
+            "label": "Do you have a valid, unencumbered U.S. RN license?",
+            "is_cbq": true,
+            "value": "",
+            "is_hidden": false,
+            "is_required": true,
+            "is_valid": true,
+            "error_message": "",
+            "options": [
+               {
+                  "label": "<!--100-->Yes",
+                  "selected": false,
+                  "value": "Yes"
+               },
+               {
+                  "label": "<!--110-->No",
+                  "selected": false,
+                  "value": "No"
+               }
+            ]
+         },
+         /*"BirthDate": {
+            "name": "BirthDate",
+            "type": "DateInput",
+            "label": "Date of Birth:",
+            "is_cbq": false,
+            "value": "",
+            "is_hidden": false,
+            "is_required": true,
+            "is_valid": true,
+            "error_message": ""
+         },*/
+         "ContactMe": {
+            "name": "ContactMe",
+            "type": "Hidden",
+            "label": "",
+            "is_cbq": false,
+            "value": "Yes",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "PC": {
+            "name": "PC",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "94404",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "CT": {
+            "name": "CT",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "SAN MATEO",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "SP": {
+            "name": "SP",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "CA",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "CN": {
+            "name": "CN",
+            "type": "Hidden",
+            "is_cbq": false,
+            "value": "US",
+            "is_hidden": true,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         },
+         "HomePhoneConsent": {
+            "name": "HomePhoneConsent",
+            "type": "Text",
+            "label": "By submitting these number(s), you agree that a representative of Kaplan University and/or QuinStreet Education Network can contact you at these number(s) - potentially using automated technology (including Text/SMS messages) or a prerecorded message. You are not required to provide consent to purchase educational services.",
+            "is_cbq": false,
+            "value": "",
+            "is_hidden": false,
+            "is_required": false,
+            "is_valid": true,
+            "error_message": ""
+         }
+      },
+      "order": [
+         ["ProgramOfInterest"],
+         ["LicensedNurse"],
+		 ["HomePhoneConsent"]
+      ],
+      "is_valid": false,
+      "is_submitted": false
+   },
+   "vkey": 10132,
+   "page_name": "increment"
 }

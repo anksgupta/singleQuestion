@@ -1,6 +1,9 @@
 mainApp.factory("TcpaService", ['$q', '$rootScope', 'HttpService', function($q, $rootScope,HttpService){
 	var phoneNumberCache = {}, 
 		defaultTcpaOptions = {contactMe: false, url: 'is-mobile.do'},
+		
+		// Do we really need phoneMap?????????????
+		
 		phoneMap = {'HP': false,'WP': false},
 		broadcastConsent = function(fieldName, isNumber, deferred){
 			phoneMap[fieldName] = isNumber;
@@ -29,7 +32,7 @@ mainApp.factory("TcpaService", ['$q', '$rootScope', 'HttpService', function($q, 
 					HttpService.getData(tcpaOptions.url).then(function(data){
 						// Cache the phone number and broadcast the event
 						phoneNumberCache[tcpaOptions.number] = data.response;
-						broadcastConsent(tcpaOptions.fieldName, true, deferred);
+						broadcastConsent(tcpaOptions.fieldName, data.response, deferred);
 					},function(error){
 						// Cache the phone number and broadcast the event
 						phoneNumberCache[tcpaOptions.number] = false;

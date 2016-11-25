@@ -1,5 +1,5 @@
 mainApp.factory("InitializationService", ['CBQService', '$q', function(CBQService, $q){
-	var user = {}, fields = {}, cbqCriteria = {}, hiddenFieldsToRender = ['leadid_token'],
+	var user = {}, fields = {}, cbqCriteria = {}, hiddenFieldsToRender = ['leadid_token', 'HP', 'WP'],
 	self = {
 		/**
 		*	initialize method that creates user and fields object to render form
@@ -48,13 +48,19 @@ mainApp.factory("InitializationService", ['CBQService', '$q', function(CBQServic
 			}
 		},
 		getField: function(fieldName){
-			return fields[fieldName]
+			if(fields[fieldName]) {
+				return fields[fieldName]
+			}
+			return {}
 		},
 		getIsRequired: function(fieldName){
-			return user[fieldName].required
+			if(user[fieldName]) {
+				return user[fieldName].required
+			}
+			return false
 		},
 		getUserData: function(field){
-			var valueArr = [], fieldValue = user[field].value;
+			var valueArr = [], fieldValue = user[field] ? user[field].value : undefined;
 			if(typeof fieldValue === 'object') {
 				for(var key in fieldValue) {
 					valueArr.push(fieldValue[key] ? fieldValue[key] : null)
@@ -65,18 +71,24 @@ mainApp.factory("InitializationService", ['CBQService', '$q', function(CBQServic
 			return valueArr
 		},
 		setRequiredFieldMsg: function(field){
-			user[field].error_message = self.requiredFieldMsg;
+			if(user[field]) {
+				user[field].error_message = self.requiredFieldMsg
+			}
 			return self
 		},
 		clearRequiredFieldMsg: function(field){
-			user[field].error_message = '';
+			if(user[field]) {
+				user[field].error_message = ''
+			}
 			return self
 		},
 		validateFields: function(){
+			// Add a flag over here to check if required field has to be set or not.
 			var deferred = $q.defer(), result = true;
 			for(var field in user) {
 				self.clearRequiredFieldMsg(field);
-				if(self.getUserData(field).indexOf(null) > -1 && self.getIsRequired(field)) {
+				if(self.getIsVisible(field) && self.getFieldType(field) !== 'Hidden'
+					&& self.getUserData(field).indexOf(null) > -1 && self.getIsRequired(field)) {
 					self.setRequiredFieldMsg(field);
 					result = false
 				}
@@ -85,16 +97,18 @@ mainApp.factory("InitializationService", ['CBQService', '$q', function(CBQServic
 			return deferred.promise
 		},
 		getFieldType: function(fieldName){
-			return fields[fieldName].type
+			return fields[fieldName] ? fields[fieldName].type : undefined
 		},
 		getIsCBQ: function(field){
-			return user[field].is_cbq
+			return fields[field] ? user[field].is_cbq : false
 		},
 		getIsVisible: function(field){
-			return user[field].visible
+			return fields[field] ? user[field].visible : false
 		},
 		setIsVisible: function(field, value){
-			user[field].visible = value;
+			if(user[field]) {
+				user[field].visible = value
+			}
 			return self
 		},
 		/**
@@ -102,10 +116,12 @@ mainApp.factory("InitializationService", ['CBQService', '$q', function(CBQServic
 		*/
 		setCbqNotShown: function(field){
 			// Store the previously selected value in prevValue which will be used to pre-populate the answer option in case the CBQ question shows up again
-			if(user[field].value){
-				user[field].prevValue = user[field].value;
+			if(user[field]) {
+				if(user[field].value){
+					user[field].prevValue = user[field].value;
+				}
+				user[field].value = 'CBQ_NOT_SHOWN';
 			}
-			user[field].value = 'CBQ_NOT_SHOWN';
 			return self
 		},
 		/**
@@ -113,9 +129,12 @@ mainApp.factory("InitializationService", ['CBQService', '$q', function(CBQServic
 		*/
 		clearCbqNotShown: function(field){
 			// Fetch the value user had previously selected iff it is stored in prevValue
-			if(typeof user[field].prevValue !== 'undefined'){
-				user[field].value = user[field].prevValue;
+			if(user[field]) {
+				if(typeof user[field].prevValue !== 'undefined'){
+					user[field].value = user[field].prevValue;
+				}
 			}
+			return self
 		},
 		getCriteria: function(){
 			return cbqCriteria
@@ -123,7 +142,8 @@ mainApp.factory("InitializationService", ['CBQService', '$q', function(CBQServic
 		getFinalUserData: function(){
 			var finalObj = {};
 			for(var key in user){
-				finalObj[key] = user[key].value
+				if(self.getFieldType(key) !== 'Hidden' && self.getIsVisible(key))
+					finalObj[key] = self.getUserData(key).join('')
 			}
 			return finalObj
 		}

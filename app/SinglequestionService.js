@@ -1,7 +1,7 @@
   /**
 	* - To move to the next step without validating the current step, call SingleQuestion.broadcastCurrent('<next/previous>')
 	*/
-mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'InitializationService', 'NotificationService', function($rootScope, $q, CBQService, InitializationService, NotificationService){
+mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'InitializationService', 'NotificationService', 'MyConfig', function($rootScope, $q, CBQService, InitializationService, NotificationService, MyConfig){
 	var defaults = {
         callbacks: {},
         current: 0,
@@ -22,9 +22,11 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 			
 			// set current property of SingleQuestion object
 			this.setCurrentValue(this.current, function(){
-				// callback function- to broadcast 'currentUpdated' event once steps are validated and 'current' is updated
+				// callback function - to broadcast 'currentUpdated' event once steps are validated and 'current' is updated
 				self.broadcastCurrent('load');
 				NotificationService.notify('singleQuestionInitialized');
+				
+				MyConfig.SHOW_ERROR_MSG = true;
 				
 				if(typeof self.callbacks['after_load'] === 'function')
 					self.callbacks['after_load'].call(self)
@@ -32,24 +34,29 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 		},
 		isValidField: function(fieldName){	// method to validate individual field, fieldName is passed as parameter
 			var result = true, deferred = $q.defer();
+		
+			InitializationService.clearRequiredFieldMsg(fieldName)
 			
-			InitializationService.clearRequiredFieldMsg(fieldName);
 			if(InitializationService.getUserData(fieldName).indexOf(null) > -1 && InitializationService.getIsRequired(fieldName)) {	// check if field value contains a null value & is required.
 				if(InitializationService.getIsCBQ(fieldName)) {		// check if field is CBQ
 					if(InitializationService.getIsVisible(fieldName)){		// CBQ field is VISIBLE, then only it is considered as NOT valid
-						InitializationService.setRequiredFieldMsg(fieldName);
+						if(MyConfig.SHOW_ERROR_MSG)
+							InitializationService.setRequiredFieldMsg(fieldName)
+							
 						result = false;
 					}	
 				} else {	// field is not CBQ then it is not valid as field is empty
-					InitializationService.setRequiredFieldMsg(fieldName);
+					if(MyConfig.SHOW_ERROR_MSG)
+						InitializationService.setRequiredFieldMsg(fieldName)
+						
 					result = false
 				}
 				deferred.resolve(result);
-			}else if(this.preConditions[fieldName]){	// check if field validation is defined in controller
+			} else if(this.preConditions[fieldName]) {	// check if field validation is defined in controller
 				this.preConditions[fieldName].call(this).then(function(result){	
 					deferred.resolve(result);
 				})
-			}else{
+			} else {
 				deferred.resolve(result)
 			}
 			return deferred.promise;

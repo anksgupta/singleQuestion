@@ -1,7 +1,8 @@
 var mainApp = angular.module('mainApp', ['ui.router', 'oc.lazyLoad']);
 
-mainApp.constant('myConfig', {
-    templateConfig: {
+mainApp.constant('MyConfig', {
+	SHOW_ERROR_MSG: false,
+    TEMPLATE_CONFIG: {
 		'Select': 'select-field',
 		'RadioInTable': 'radio-in-table',
 		'CustomSelect': 'custom-select',
@@ -35,7 +36,7 @@ mainApp.config(['$locationProvider', '$stateProvider', '$urlRouterProvider', '$o
 		});
 		
 		$stateProvider
-			/*.state('prequal', {
+			.state('prequal', {
 				url: "/index.html",
 				templateUrl: "templates/landing.html",
 				controller: 'prequalController',
@@ -46,7 +47,7 @@ mainApp.config(['$locationProvider', '$stateProvider', '$urlRouterProvider', '$o
 						]);
 					}]
 				}
-			})*/
+			})
 			.state('increment', {
 				url: "/index.html",
 				templateUrl: "templates/increment.html",
@@ -62,7 +63,14 @@ mainApp.config(['$locationProvider', '$stateProvider', '$urlRouterProvider', '$o
 			/*.state('prequal', {
 				url: "/index.html",
 				templateUrl: "templates/thankyou.html",
-				controller: 'tyController'
+				controller: 'tyController',
+				resolve: {
+					deps: ['$ocLazyLoad', function($ocLazyLoad) {
+						return $ocLazyLoad.load([
+							'app/tyController.js'
+						]);
+					}]
+				}
 			})*/
 }]);
 
