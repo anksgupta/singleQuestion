@@ -1,7 +1,7 @@
   /**
 	* - To move to the next step without validating the current step, call SingleQuestion.broadcastCurrent('<next/previous>')
 	*/
-mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'InitializationService', 'NotificationService', 'MyConfig', function($rootScope, $q, CBQService, InitializationService, NotificationService, MyConfig){
+mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataService', 'NotificationService', 'MyConfig', 'RouterService', '$injector', 'CommonValidationService', function($rootScope, $q, CBQService, UserDataService, NotificationService, MyConfig, RouterService, $injector, CommonValidationService){
 	var defaults = {
         callbacks: {},
         current: 0,
@@ -14,14 +14,14 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 			angular.extend(this, defaults, options);
 			var self = this;
 			
-			if(this.steps === 0)
-				this.steps = this.order.length;
+			if(self.steps === 0)
+				self.steps = self.order.length;
 			
-			if(typeof this.callbacks['before_load'] === 'function')
-				this.callbacks['before_load'].call(this)
+			if(typeof self.callbacks['before_load'] === 'function')
+				self.callbacks['before_load'].call(self)
 			
 			// set current property of SingleQuestion object
-			this.setCurrentValue(this.current, function(){
+			self.setCurrentValue(self.current, function(){
 				// callback function - to broadcast 'currentUpdated' event once steps are validated and 'current' is updated
 				self.broadcastCurrent('load');
 				NotificationService.notify('singleQuestionInitialized');
@@ -33,41 +33,51 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 			});
 		},
 		isValidField: function(fieldName){	// method to validate individual field, fieldName is passed as parameter
-			var result = true, deferred = $q.defer();
+			var result = true, deferred = $q.defer(), data = UserDataService.getUserData(fieldName);
 		
-			InitializationService.clearRequiredFieldMsg(fieldName)
+			UserDataService.clearRequiredFieldMsg(fieldName)
 			
-			if(InitializationService.getUserData(fieldName).indexOf(null) > -1 && InitializationService.getIsRequired(fieldName)) {	// check if field value contains a null value & is required.
-				if(InitializationService.getIsCBQ(fieldName)) {		// check if field is CBQ
-					if(InitializationService.getIsVisible(fieldName)){		// CBQ field is VISIBLE, then only it is considered as NOT valid
+			if((data.indexOf(null) > -1 || data.indexOf(MyConfig.CBQ_NOT_SHOWN) > -1) && UserDataService.getIsRequired(fieldName)) {	// check if field value contains a null value & is required.
+				if(UserDataService.getIsCBQ(fieldName)) {		// check if field is CBQ
+					if(UserDataService.getIsVisible(fieldName)){		// CBQ field is VISIBLE, then only it is considered as NOT valid
 						if(MyConfig.SHOW_ERROR_MSG)
-							InitializationService.setRequiredFieldMsg(fieldName)
+							UserDataService.setRequiredFieldMsg(fieldName)
 							
 						result = false;
 					}	
 				} else {	// field is not CBQ then it is not valid as field is empty
 					if(MyConfig.SHOW_ERROR_MSG)
-						InitializationService.setRequiredFieldMsg(fieldName)
+						UserDataService.setRequiredFieldMsg(fieldName)
 						
 					result = false
 				}
 				deferred.resolve(result);
-			} else if(this.preConditions[fieldName]) {	// check if field validation is defined in controller
-				this.preConditions[fieldName].call(this).then(function(result){	
-					deferred.resolve(result);
+			} else if(this.preConditions[fieldName] || CommonValidationService[fieldName]) {	// check if field validation is defined in controller
+				var promises = [], conditionArr = [this.preConditions[fieldName], CommonValidationService[fieldName]];
+				
+				angular.forEach(conditionArr, function(condition){
+					if(condition) {
+						var deferred = $q.defer(); 	// creating deferred object outside foreach loop will always resolve last deferred object Promise 
+						condition().then(function(result){
+							deferred.resolve(result)
+						});
+						promises.push(deferred.promise);
+					}
+				});
+				$q.all(promises).then(function(fieldResult){
+					(fieldResult.indexOf(false) > -1) ? deferred.resolve(false): deferred.resolve(true)
 				})
 			} else {
 				deferred.resolve(result)
 			}
-			return deferred.promise;
-			//return result
+			return deferred.promise
 		},
 		isValidSingleQuestionStep: function(field){		// method to validate Single Question step, one Single Question step can have multiple fields
 			if(!field)
 				field = this.order[this.current]
 			
-			var result = true, promises = [], stepDeferredObj = $q.defer(), self = this;
-			angular.forEach(field, function(fieldName, index){
+			var promises = [], stepDeferredObj = $q.defer(), self = this;
+			angular.forEach(field, function(fieldName){
 				var deferred = $q.defer(); 	// creating deferred object outside foreach loop will always resolve last deferred object Promise 
 				self.isValidField(fieldName).then(function(result){
 					deferred.resolve(result)
@@ -75,18 +85,35 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 				promises.push(deferred.promise);
 			});
 			$q.all(promises).then(function(fieldResult){
-				(fieldResult.indexOf(false) > -1) ? stepDeferredObj.resolve(false): stepDeferredObj.resolve(true);
+				(fieldResult.indexOf(false) > -1) ? stepDeferredObj.resolve(false): stepDeferredObj.resolve(true)
+			});
+			return stepDeferredObj.promise
+		},
+		callInjectedServices: function(){		// Calls the dynamically injected services which are injected based on A/B tests.
+			var promises = [], stepDeferredObj = $q.defer();
+			angular.forEach(RouterService.getRouteData().dependencies, function(serviceName){
+				var deferred = $q.defer(), service = $injector.get(serviceName);
+				service.validate.call(service).then(function(result) {
+					deferred.resolve(result)
+				});
+				promises.push(deferred.promise);
+			});
+			$q.all(promises).then(function(fieldResult){
+				(fieldResult.indexOf(false) > -1) ? stepDeferredObj.resolve(false): stepDeferredObj.resolve(true)
 			})
 			return stepDeferredObj.promise
 		},
 		showNext: function(){
 			var promise = [], self = this;
 			
-			this.isValidSingleQuestionStep().then(function(result){
+			self.isValidSingleQuestionStep().then(function(result){
+				if(result)
+					return self.callInjectedServices()
+			}).then(function(result){
 				if(typeof self.callbacks['before_next'] === 'function')
 					self.callbacks['before_next'].call(self)
 				if(result){
-				// If current step is not the last step, then only proceed further
+					// If current step is not the last step, then only proceed further
 					if(self.current !== (self.order.length - 1)){
 						promise = self.handleCBQPromise(self.current + 1);
 						// Add all the deferred objects for each field to $q service queue
@@ -152,7 +179,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 		},
 		checkVisibility: function(name){
 			// check if field is in current order and visible 
-			return (this.order[this.current].indexOf(name) > -1 && InitializationService.getIsVisible(name))
+			return (this.order[this.current].indexOf(name) > -1 && UserDataService.getIsVisible(name))
 		},
 		handleCBQPromise: function(current){
 			// Method sets 'visible' property for CBQ field and returns array of promises for CBQ and non-CBQ fields
@@ -161,34 +188,34 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 				var deferredItemList = $q.defer();		// create separate deferred object for each field
 				
 				//	if current field is CBQ field, call AJAX service that validates CBQ fields
-				if(InitializationService.getIsCBQ(fieldName)){
+				if(UserDataService.getIsCBQ(fieldName)){
 					CBQService.getCBQData(fieldName)
 						.then(function(data){
 							/*if(data){
-								InitializationService.setIsVisible(fieldName, true);
+								UserDataService.setIsVisible(fieldName, true);
 								// if CBQ field is valid resolve deferred object with "is-cbq" string
 								deferredItemList.resolve("is-cbq")
 							}else {
-								InitializationService.setIsVisible(fieldName, false);
+								UserDataService.setIsVisible(fieldName, false);
 								// if CBQ field is Not valid resolve deferred object with "cbq-hidden" string
 								deferredItemList.resolve("cbq-hidden")
 							}*/
 							// If CBQ field is valid, resolve deferred object with "is-cbq" string else resolve with "cbq-hidden" string
-							InitializationService.setIsVisible(fieldName, data)[(data ? 'clearCbq': 'setCbq') + 'NotShown'](fieldName);
+							UserDataService.setIsVisible(fieldName, data)[(data ? 'clearCbq': 'setCbq') + 'NotShown'](fieldName);
 							deferredItemList.resolve(data ? "is-cbq" : "cbq-hidden")
 						}, function(data){
 							//----- remove/update code once CBQService is in place
 							if(data){
-								InitializationService.setIsVisible(fieldName, true);
+								UserDataService.setIsVisible(fieldName, true);
 								deferredItemList.resolve("is-cbq")
 							}else {
-								InitializationService.setIsVisible(fieldName, false);
+								UserDataService.setIsVisible(fieldName, false);
 								deferredItemList.resolve("cbq-hidden")
 							}
 						});	
 				} else {
 					//	if current field is Standard field, resolve deferred object with "is-field" string
-					InitializationService.setIsVisible(fieldName, true);
+					UserDataService.setIsVisible(fieldName, true);
 					deferredItemList.resolve("is-field");
 				}
 				// push all the deferred object for each field in promises array 
@@ -222,10 +249,10 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'Initializa
 			// returns Array of visible field object
 			var step = this.order[this.current], visibleFieldArr = [];
 			for(var i = 0; i < step.length; i++){
-				if(InitializationService.getIsVisible(step[i])){
+				if(UserDataService.getIsVisible(step[i])){
 					visibleFieldArr.push({
 						name: step[i],
-						type: InitializationService.getFieldType(step[i]).toLowerCase()
+						type: UserDataService.getFieldType(step[i]).toLowerCase()
 					})
 				}
 			}

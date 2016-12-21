@@ -15,7 +15,7 @@ mainApp.directive('generateField', ['MyConfig', '$compile', function(MyConfig, $
 }]);
 
 // Tracking Directive 
-mainApp.directive('tracker', ['TrackingService', function(TrackingService) {
+mainApp.directive('tracker', ['TrackingService', 'MyConfig', function(TrackingService, MyConfig) {
 		return {
 			restrict: 'E',
 			scope: {
@@ -25,11 +25,25 @@ mainApp.directive('tracker', ['TrackingService', function(TrackingService) {
 				for(var key in scope.user){
 					(function(key){
 						scope.$watch('user.' + key + '.value', function(newValue, oldValue) {
-							if(newValue !== oldValue){
-								TrackingService.log({
-									eventType: 'elem-change',
-									position: key + '_' + newValue
-								})
+							var log = {};
+							// Check if the values are different and CBQ_NOT_SHOWN is not present in any of the values.
+							if(!angular.equals(newValue, oldValue) && JSON.stringify(newValue).indexOf(MyConfig.CBQ_NOT_SHOWN) === -1) {
+								// If newValue & oldValue are objects, then log those fields whose values have changed.
+								if(typeof newValue === 'object' && typeof oldValue === 'object') {
+									for(var field in newValue) {
+										if(newValue[field] !== oldValue[field]) {
+											log[field] = newValue[field]
+										}
+									}
+								} else {
+									log[key] = newValue
+								}
+								for(field in log) {
+									TrackingService.log({
+										eventType: 'elem-change',
+										position: field + '_' + log[field]
+									})
+								}
 							}
 						}, true);
 					}(key))
@@ -86,7 +100,7 @@ mainApp.directive('elemReady', ['$rootScope', 'NotificationService', function($r
 }])
 
 // Home phone directive
-mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'InitializationService', '$rootScope', function(TcpaService, NotificationService, InitializationService, $rootScope){
+mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'UserDataService', '$rootScope', function(TcpaService, NotificationService, UserDataService, $rootScope){
 	return {
 		restrict: 'E',
 		replace: true,
@@ -95,18 +109,18 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'Initiali
 			field: '='
 		},
 		template: '<div ng-switch="field.is_single_col">' +
-					'<div ng-switch-when="true"><input name="qs-{{field.name}}" type="tel" maxlength="" placeholder="" ng-model="singlePhoneNumber.value"/></div>' +
+					'<div ng-switch-when="true"><input ng-model-options="{\'updateOn\': \'blur\'}" name="qs-{{field.name}}" type="tel" maxlength="" placeholder="" ng-model="singlePhoneNumber.value"/></div>' +
 					'<div ng-switch-when="false">' +
-						'<input id="{{field.name}}_AREA" name="{{field.name}}_AREA" type="tel" maxlength="3" placeholder="" ng-model="area.value"/>' +
-						'<input id="{{field.name}}_PREFIX" name="{{field.name}}_PREFIX" type="tel" maxlength="3" placeholder="" ng-model="prefix.value"/>' +
-						'<input id="{{field.name}}_NUMBER" name="{{field.name}}_NUMBER" type="tel" maxlength="4" placeholder="" ng-model="number.value"/>' +
+						'<input id="{{field.name}}_AREA" ng-model-options="{\'updateOn\': \'blur\'}" name="{{field.name}}_AREA" type="tel" maxlength="3" placeholder="" ng-model="area.value"/>' +
+						'<input id="{{field.name}}_PREFIX" ng-model-options="{\'updateOn\': \'blur\'}" name="{{field.name}}_PREFIX" type="tel" maxlength="3" placeholder="" ng-model="prefix.value"/>' +
+						'<input id="{{field.name}}_NUMBER" ng-model-options="{\'updateOn\': \'blur\'}" name="{{field.name}}_NUMBER" type="tel" maxlength="4" placeholder="" ng-model="number.value"/>' +
 					'</div>' +
 			    '</div>',
 		link: function(scope, element, attrs){
 			// Check the implementation for $watch. It dosesn't fire when we watch a primitive value inside a directive. We have implemented a work around at the moment. Need to revisit this implementation.
 			NotificationService.subscribe('repeatComplete', function(event, args){
 				var fieldName = scope.field.name, prefixElem, numberElem;
-				if(scope.field.is_single_col){
+				if(scope.field.is_single_col) {
 					scope.singlePhoneNumber = {};
 					scope.singlePhoneNumber.value = scope.user[fieldName].value[fieldName + "_AREA"] + 
 										scope.user[fieldName].value[fieldName + "_PREFIX"] +
@@ -114,7 +128,7 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'Initiali
 										
 					scope.$watch('singlePhoneNumber.value', function(newValue, oldValue) {
 						var phoneNumber = newValue.replace(/[^0-9]/g, ''),
-							contactMe = InitializationService.getUserData('ContactMe');
+							contactMe = UserDataService.getUserData('ContactMe');
 						TcpaService.handleTCPA({
 								number: phoneNumber, 
 								contactMe: (contactMe.indexOf(null) > -1) ? false : contactMe.join(''),
@@ -126,7 +140,7 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'Initiali
 						scope.user[fieldName].value[fieldName + "_PREFIX"] = phoneNumber.substring(3, 6);
 						scope.user[fieldName].value[fieldName + "_NUMBER"] = phoneNumber.substring(6)
 					});
-				}else {
+				} else {
 					scope.area = {value: scope.user[fieldName].value[fieldName + "_AREA"]};
 					scope.prefix = {value: scope.user[fieldName].value[fieldName + "_PREFIX"]};
 					scope.number = {value: scope.user[fieldName].value[fieldName + "_NUMBER"]};
@@ -136,7 +150,7 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'Initiali
 										
 					scope.$watch('[area.value, prefix.value, number.value]', function(newValues, oldValues) {
 						var phoneNumber = scope.area.value + scope.prefix.value + scope.number.value,
-							contactMe = InitializationService.getUserData('ContactMe');
+							contactMe = UserDataService.getUserData('ContactMe');
 						TcpaService.handleTCPA({
 								number: phoneNumber, 
 								contactMe: (contactMe.indexOf(null) > -1) ? false : contactMe.join(''),
@@ -160,7 +174,7 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'Initiali
 }]);
 
 // TCPA directive
-mainApp.directive("homePhoneConsent",['InitializationService', 'TcpaService', function(InitializationService, TcpaService){
+mainApp.directive("homePhoneConsent",['UserDataService', 'TcpaService', function(UserDataService, TcpaService){
 	return {
 		restrict: 'E',
 		scope: {
@@ -187,7 +201,7 @@ mainApp.directive("homePhoneConsent",['InitializationService', 'TcpaService', fu
 				if(consentContainer)
 					angular.element(consentContainer)[(args.showConsent ? 'remove' : 'add') + 'Class']('ng-hide')
 				
-				InitializationService.setIsVisible('HomePhoneConsent', args.showConsent);
+				UserDataService.setIsVisible('HomePhoneConsent', args.showConsent);
 				
 				if(scope.field.type !== 'Checkbox') {
 					scope.user['HomePhoneConsent'].value = (args.showConsent ? 'Yes' : '')
@@ -195,11 +209,11 @@ mainApp.directive("homePhoneConsent",['InitializationService', 'TcpaService', fu
 			});
 			
 			// Below code handles TCPA for contact/increment page.
-			if(InitializationService.getFieldType('HP') === 'Hidden' || InitializationService.getFieldType('WP') === 'Hidden') {
+			if(UserDataService.getFieldType('HP') === 'Hidden' || UserDataService.getFieldType('WP') === 'Hidden') {
 				var phoneVal = {
-					HP: (InitializationService.getUserData('HP').indexOf(null) > -1) ? '' : InitializationService.getUserData('HP').join(''),
-					WP: (InitializationService.getUserData('WP').indexOf(null) > -1) ? '' : InitializationService.getUserData('WP').join('')
-				}, contactMe = InitializationService.getUserData('ContactMe');
+					HP: (UserDataService.getUserData('HP').indexOf(null) > -1) ? '' : UserDataService.getUserData('HP').join(''),
+					WP: (UserDataService.getUserData('WP').indexOf(null) > -1) ? '' : UserDataService.getUserData('WP').join('')
+				}, contactMe = UserDataService.getUserData('ContactMe');
 				
 				for(var key in phoneVal) {
 					if(phoneVal[key].length === 10) {
@@ -420,29 +434,30 @@ mainApp.directive('directiveIf', ['$compile',
 }]);
 
 // CBQ directive to handle criteria on contact & increment pages
-mainApp.directive('cbq', ['InitializationService', 'CBQService', function(InitializationService, CBQService){
+mainApp.directive('cbq', ['UserDataService', 'CBQService', function(UserDataService, CBQService){
 	return {
 		restrict: 'A',
 		scope: {
 			fieldname: '@',
-			user: '=',
-			cbqCriteriaObj: '='
+			user: '='
 		},
 		link: function link(scope, element, attrs) {
-			scope.postDataObj = {};
-			angular.forEach(scope.cbqCriteriaObj[scope.fieldname].p, function(parent){
-				scope.$watchCollection(function(){return scope.user[parent]}, function(newValue, oldValue) {
-					CBQService.getCBQData(scope.fieldname)
-						.then(function(data){
-							element[(data ? 'remove' : 'add') + 'Class']('ng-hide');
-							InitializationService[(data ? 'clearCbq': 'setCbq') + 'NotShown'](scope.fieldname);
-							InitializationService.setIsVisible(scope.fieldname, data)
-						}, function(data){
-							console.log('ajax failed - promise rejected')
-							false ? element.removeClass('ng-hide') : element.addClass('ng-hide');
-						})
+			var criteriaObj = UserDataService.getFieldCriteria(fieldname);
+			if(criteriaObj) {
+				angular.forEach(criteriaObj.p, function(parent){
+					scope.$watchCollection(function(){return UserDataService.getUserData(parent)}, function(newValue, oldValue) {
+						CBQService.getCBQData(scope.fieldname)
+							.then(function(data){
+								element[(data ? 'remove' : 'add') + 'Class']('ng-hide');
+								UserDataService[(data ? 'clearCbq': 'setCbq') + 'NotShown'](scope.fieldname);
+								UserDataService.setIsVisible(scope.fieldname, data)
+							}, function(data){
+								console.log('ajax failed - promise rejected')
+								false ? element.removeClass('ng-hide') : element.addClass('ng-hide');
+							})
+					});
 				});
-			});
+			}
 	    }
 	}
 }]);
@@ -452,7 +467,7 @@ mainApp.directive('cbq', ['InitializationService', 'CBQService', function(Initia
 *	validateBeforeSubmit: Contains reference to a function which you want to execute before form is submitted.
 *	emittedEvent: If you want to manually submit a form, then pass the eventname to this directive. When this event is emitted, the form will be submitted. One scenario is the auto submit case in singlequestion.
 */
-mainApp.directive('submitBtn', ['HttpService', '$rootScope', 'InitializationService', 'RouterService', 'SingleQuestion', function(HttpService, $rootScope, InitializationService, RouterService, SingleQuestion){
+mainApp.directive('submitBtn', ['HttpService', '$rootScope', 'UserDataService', 'RouterService', 'SingleQuestion', function(HttpService, $rootScope, UserDataService, RouterService, SingleQuestion){
 	return {
 		restrict: 'E',
 		scope: {
@@ -466,9 +481,9 @@ mainApp.directive('submitBtn', ['HttpService', '$rootScope', 'InitializationServ
 					'<span class="processing">Processing...</span></button>',
 		link: function link(scope, element, attrs) {
 			var url = scope.url ? ('/' + scope.url.replace(/.do|\//, '') + '.do') : '/submit.do',
-				validateBeforeSubmit = (typeof scope.validateBeforeSubmit === 'function') ? scope.validateBeforeSubmit : InitializationService.validateFields;
+				validateBeforeSubmit = (typeof scope.validateBeforeSubmit === 'function') ? scope.validateBeforeSubmit : UserDataService.validateFields;
 			function submitForm(){
-				HttpService.getData(url, InitializationService.getFinalUserData()).then(function(json){
+				HttpService.getData(url, UserDataService.getFinalUserData()).then(function(json){
 					RouterService.navigate(json)
 				}, function(json){
 					//RouterService.navigate(json)

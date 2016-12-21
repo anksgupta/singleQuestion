@@ -2,6 +2,7 @@ var mainApp = angular.module('mainApp', ['ui.router', 'oc.lazyLoad']);
 
 mainApp.constant('MyConfig', {
 	SHOW_ERROR_MSG: false,
+	CBQ_NOT_SHOWN: 'CBQ_NOT_SHOWN',
     TEMPLATE_CONFIG: {
 		'Select': 'select-field',
 		'RadioInTable': 'radio-in-table',
@@ -20,31 +21,22 @@ mainApp.config(['$locationProvider', '$stateProvider', '$urlRouterProvider', '$o
 		$locationProvider.html5Mode(true);
 		//$urlRouterProvider.otherwise('/landing.do');
 		
-		$ocLazyLoadProvider.config({
-			debug: false,
-			events: false,
-			modules: [
-				{
-					name: 'lazy_autosize',
-					files: [
-						'app/libs/autosize/dist/autosize.js',
-						'app/libs/angular-autosize.js'
-					],
-					serie: true
-				}
-			]
-		});
-		
 		$stateProvider
 			.state('prequal', {
 				url: "/index.html",
 				templateUrl: "templates/landing.html",
 				controller: 'prequalController',
 				resolve: {
-					deps: ['$ocLazyLoad', function($ocLazyLoad) {
-						return $ocLazyLoad.load([
-							'app/prequalController.js'
-						]);
+					// The below function gets executed twice. Once from $state.go and secondly it gets called internally.
+					deps: ['$ocLazyLoad', 'RouterService', function($ocLazyLoad, RouterService) {
+						var data = RouterService.getRouteData(), dependencies = ['app/prequalController.js'];
+						if(data.dependencies) {
+							dependencies = dependencies.concat(data.dependencies.map(function(dependency){
+								return ('app/' + dependency + '.js');
+							}));
+						}
+						
+						return $ocLazyLoad.load(dependencies)
 					}]
 				}
 			})
@@ -53,10 +45,15 @@ mainApp.config(['$locationProvider', '$stateProvider', '$urlRouterProvider', '$o
 				templateUrl: "templates/increment.html",
 				controller: 'incrementController',
 				resolve: {
-					deps: ['$ocLazyLoad', function($ocLazyLoad) {
-						return $ocLazyLoad.load([
-							'app/incrementController.js'
-						]);
+					deps: ['$ocLazyLoad', 'RouterService', function($ocLazyLoad, RouterService) {
+						var data = RouterService.getRouteData(), dependencies = ['app/incrementController.js'];
+						if(data.dependencies) {
+							dependencies = dependencies.concat(data.dependencies.map(function(dependency){
+								return ('app/' + dependency + '.js');
+							}));
+						}
+						
+						return $ocLazyLoad.load(dependencies)
 					}]
 				}
 			})

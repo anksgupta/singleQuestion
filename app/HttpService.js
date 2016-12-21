@@ -13,7 +13,7 @@ mainApp.factory("HttpService", ['$http', '$q', function($http, $q){
 				deferred.resolve(data)	//Passing data to deferred's resolve function on successful completion
 			}, function(data){
 				self.callInProgress = false;
-				deferred.reject({16750611: false, 16750612: false})	//Sending an error message in case of failure
+				deferred.reject({16750611: false, 16750612: false, 82612360: false})	//Sending an error message in case of failure
 			})
 			return deferred.promise	//Returning the promise object
 		},
@@ -26,7 +26,7 @@ mainApp.factory("HttpService", ['$http', '$q', function($http, $q){
 				deferred.resolve(data)	//Passing data to deferred's resolve function on successful completion
 			}, function() {
 				self.callInProgress = false;
-				deferred.reject({16750611: false, 16750612: false})	//Sending an error message in case of failure
+				deferred.reject({16750611: false, 16750612: false, 82612360: false})	//Sending an error message in case of failure
 			});
 			return deferred.promise
 		}

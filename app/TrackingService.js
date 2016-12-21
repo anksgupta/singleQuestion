@@ -1,4 +1,4 @@
-mainApp.factory("TrackingService", ['InitializationService', function(InitializationService){
+mainApp.factory("TrackingService", ['UserDataService', function(UserDataService){
 	var prefix = 'DCSext.qse_edu_', wtAvailable = (typeof window.Webtrends === 'object' && typeof window.Webtrends.multiTrack === 'function');
 	return {
 		/**
