@@ -1,6 +1,6 @@
 mainApp.factory("UserDataService", ['MyConfig', '$q', function(MyConfig, $q){
 	// Common Validation service to handle commmon field validations
-	var appData = {fields: {}, user: {}},
+	var appData = {fields: {}, user: {}, hiddenFields: {}},
 	self = {
 		requiredFieldMsg: 'Required Field',
 		init: function(data){
@@ -25,14 +25,25 @@ mainApp.factory("UserDataService", ['MyConfig', '$q', function(MyConfig, $q){
 			return false
 		},
 		getUserData: function(field){
-			var valueArr = [], fieldValue = appData.user[field] ? appData.user[field].value : undefined;
+			var valueArr = [], fieldValue = appData.user[field] ? appData.user[field].value : this.getHiddenField(field);
 			if(typeof fieldValue === 'object') {
 				for(var key in fieldValue) {
 					valueArr.push(fieldValue[key] ? fieldValue[key] : null)
 				}
 				return valueArr
 			}
-			valueArr.push(fieldValue ? fieldValue : null);
+			valueArr.push(fieldValue);
+			return valueArr
+		},
+		getHiddenField: function(field){
+			var valueArr = [], fieldValue = appData.hiddenFields[field] ? appData.hiddenFields[field].value : null;
+			if(typeof fieldValue === 'object') {
+				for(var key in fieldValue) {
+					valueArr.push(fieldValue[key] ? fieldValue[key] : null)
+				}
+				return valueArr
+			}
+			valueArr.push(fieldValue);
 			return valueArr
 		},
 		setRequiredFieldMsg: function(field){

@@ -184,14 +184,20 @@ mainApp.directive("homePhoneConsent",['UserDataService', 'TcpaService', function
 		template: '<div ng-switch="field.type">' + 
 					'<div ng-switch-when="Text">' +
 						'<label>' + 
-							'<input class="ng-hide" id="leadid_tcpa_disclosure" name="qs-HomePhoneConsent" type="text" ng-model="user[field.name].value">' + 
+							// don't use ng-model and only use value attribute so LeadId script can read the field
+							// ng-model will set value property and not the attribute
+							'<input class="ng-hide" id="leadid_tcpa_disclosure" name="HomePhoneConsent" type="text" value="{{user[field.name].value}}">' + 
 							'<span>{{field.label}}</span>' + 
 						'</label>' + 
 					'</div>' + 
 					'<div ng-switch-when="Checkbox">' + 
-						'<label>' + 
-							'<input ng-true-value="\'Yes\'" ng-false-value="\'\'" id="leadid_tcpa_disclosure" name="qs-HomePhoneConsent" type="checkbox" ng-model="user[field.name].value">' + 
-							'<span>{{field.label}}</span>' + 
+						'<label ng-repeat="option in field.options">' + 
+							/* For checkbox case, LeadID will read value only if checkbox is checked.
+							   In case checked attribute is set using javascript, Passive consent issue may occur from LeadID
+							   so we've used ng-if to show/hide HTML input with checked attribute */ 
+							'<input ng-if="isChecked==\'field.value\'" name="HomePhoneConsent" type="checkbox" checked value="{{field.value}}" ng-model="user[field.name].value" ng-change="setValue()" ng-true-value="{{field.value}}" ng-false-value="\'\'"/>' + 
+							'<input ng-if="isChecked!=\'field.value\'" name="HomePhoneConsent" type="checkbox" value="{{field.value}}" ng-model="user[field.name].value" ng-change="setValue()" ng-true-value="{{field.value}}" ng-false-value="\'\'"/>' + 
+							'<span>{{option.label}}</span>' + 
 						'</label>' + 
 					'</div>',
 		link: function(scope, element, attrs){
@@ -221,10 +227,14 @@ mainApp.directive("homePhoneConsent",['UserDataService', 'TcpaService', function
 								number: phoneVal[key], 
 								contactMe: (contactMe.indexOf(null) > -1) ? false : contactMe.join(''),
 								fieldName: key
-							}).then(function(){
-								//NotificationService.notify('repeatComplete');
 							});
 					}
+				}
+			}
+			if(scope.field.type === 'Checkbox') {
+				scope.isChecked = scope.user['HomePhoneConsent'].value;
+				scope.setValue = function(){
+					scope.isChecked = scope.user['HomePhoneConsent'].value;
 				}
 			}
 		}
@@ -571,24 +581,28 @@ mainApp.directive('singleQuestionDirective',['$rootScope', 'SingleQuestion', 'Si
 			
 			NotificationService.subscribe('singleQuestionInitialized', function(event, args){
 				var typesToIgnore = 'text|checkbox';
-				SingleQuestion.init(scope.singleQuestionOptions);
-				for(var i = 0;i < SingleQuestion.order.length; i++){
-					var step = SingleQuestion.order[i];
-					for(var j = 0;j < step.length; j++){
-						(function(field){
-							scope.$watch('user.' + field + '.value', function(newValue, oldValue) {
-								var conditionArray = [!angular.equals(newValue, oldValue),
-														SingleQuestion.getCBQVisibleFieldObj().length === 1,
-														typesToIgnore.indexOf(SingleQuestion.getCBQVisibleFieldObj()[0].type) === -1,
-														newValue !== "CBQ_NOT_SHOWN" && oldValue !== "CBQ_NOT_SHOWN"];
-								if(eval(conditionArray.join('&&'))){
-									// If current order has only one visible field, then call ShowNext on model update.
-									SingleQuestion.showNext()
-								}
-							});
-						}(step[j]))
-					}			
-				}
+				
+				SingleQuestion.init(scope.singleQuestionOptions).then(function(){
+					// Bind watchers only after SingleQuestion init method is resolved.
+					for(var i = 0;i < SingleQuestion.order.length; i++){
+						var step = SingleQuestion.order[i];
+						for(var j = 0;j < step.length; j++){
+							(function(field){
+								scope.$watch('user.' + field + '.value', function(newValue, oldValue) {
+									var conditionArray = [!angular.equals(newValue, oldValue),
+															SingleQuestion.getCBQVisibleFieldObj().length === 1,
+															typesToIgnore.indexOf(SingleQuestion.getCBQVisibleFieldObj()[0].type) === -1,
+															newValue !== "CBQ_NOT_SHOWN" && oldValue !== "CBQ_NOT_SHOWN"];
+									if(eval(conditionArray.join('&&'))){
+										// If current order has only one visible field, then call ShowNext on model update.
+										SingleQuestion.showNext()
+									}
+								});
+							}(step[j]))
+						}			
+					}
+				});
+				
 			});
         }
     }      

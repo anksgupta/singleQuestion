@@ -36,7 +36,11 @@ mainApp.config(['$locationProvider', '$stateProvider', '$urlRouterProvider', '$o
 							}));
 						}
 						
-						return $ocLazyLoad.load(dependencies)
+						return $ocLazyLoad.load(dependencies).then(function(){
+							console.log('success');
+						},function(err){
+							console.log(err.message);
+						});
 					}]
 				}
 			})

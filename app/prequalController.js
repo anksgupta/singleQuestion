@@ -1,7 +1,11 @@
 // Always get the module reference rather than using the existing app reference. If you use the existing app reference, then it gives an error if you try and load the controller using ocLazyLoad.
-angular.module('mainApp').controller('prequalController', ['$scope', '$q', 'HttpService', 'InitializationService', 'RouterService', function($scope, $q, HttpService, InitializationService, RouterService){
+angular.module('mainApp').controller('prequalController', ['$scope', '$q', '$injector', 'HttpService', 'InitializationService', 'RouterService', function($scope, $q, $injector, HttpService, InitializationService, RouterService){
 	var data = RouterService.getRouteData();
 	angular.extend($scope, InitializationService.initialize(data));
+	
+	angular.forEach(RouterService.getRouteData().dependencies, function(serviceName){
+		$injector.has(serviceName) ? service = $injector.get(serviceName): console.error(serviceName + ': Service not found');
+	});
 	
 	$scope.singleQuestionOptions = {
 		order: data.form.order,
@@ -11,7 +15,6 @@ angular.module('mainApp').controller('prequalController', ['$scope', '$q', 'Http
 			"WP": function(){
 				var deferred = $q.defer();
 				deferred.resolve(true);
-				console.log('WP');
 				return deferred.promise
 			}
 		},

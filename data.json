@@ -628,6 +628,72 @@
                 "is_valid":true,
                 "error_message":""
             },
+			"ContactMe":{  
+                "name":"ContactMe",
+                "type":"Hidden",
+                "label":"",
+                "is_cbq":false,
+                "value":true,
+                "is_hidden":true,
+                "is_required":false,
+                "is_valid":true,
+                "error_message":""
+            },
+			"SiteVersion":{  
+                "name":"SiteVersion",
+                "type":"Hidden",
+                "label":"",
+                "is_cbq":false,
+                "value": "20421162",
+                "is_hidden":true,
+                "is_required":false,
+                "is_valid":true,
+                "error_message":""
+            },
+			"CCID":{  
+                "name":"CCID",
+                "type":"Hidden",
+                "label":"",
+                "is_cbq":false,
+                "value": "20076382203368496",
+                "is_hidden":true,
+                "is_required":false,
+                "is_valid":true,
+                "error_message":""
+            },
+			"CLK":{  
+                "name":"CLK",
+                "type":"Hidden",
+                "label":"",
+                "is_cbq":false,
+                "value": "111111111111111111",
+                "is_hidden":true,
+                "is_required":false,
+                "is_valid":true,
+                "error_message":""
+            },
+			"TrafficSource":{  
+                "name":"TrafficSource",
+                "type":"Hidden",
+                "label":"",
+                "is_cbq":false,
+                "value": "361",
+                "is_hidden":true,
+                "is_required":false,
+                "is_valid":true,
+                "error_message":""
+            },
+			"LeadSiteURL":{  
+                "name":"LeadSiteURL",
+                "type":"Hidden",
+                "label":"",
+                "is_cbq":false,
+                "value": "http://eduformsone.com/index.do?QTR=ZZf200802211640590Za20076382Zg78Zw20Zm62Zc203368496Zs3086ZZ&NS_minifyfiles=false&CCID=20076382203368496&CLK=111111111111111111&NS_mobilenamespace=singlepage-mobile&",
+                "is_hidden":true,
+                "is_required":false,
+                "is_valid":true,
+                "error_message":""
+            },
             "HP":{  
                 "name":"HP",
                 "type":"PhoneFormat",
@@ -661,15 +727,22 @@
                 "error_message":""
             },
             "HomePhoneConsent":{  
-                "name":"HomePhoneConsent",
-                "type":"Text",
-                "label":"By submitting these number(s), you agree that a representative of Kaplan University and\/or QuinStreet Education Network can contact you at these number(s) - potentially using automated technology (including Text\/SMS messages) or a prerecorded message. You are not required to provide consent to purchase educational services.",
-                "is_cbq":false,
-                "value":"",
-                "is_hidden":false,
-                "is_required":false,
-                "is_valid":true,
-                "error_message":""
+                error_message: "Required field",
+				is_cbq: false,
+				is_hidden: false,
+				is_required: true,
+				is_valid: false,
+				label: "<div style=\"display:none\">I acknowledge that, by clicking the checkbox as my official signature, I consent to representatives of Ashland University and/or QuinStreet Education Network contacting me about educational opportunities via email, text, or phone, including my mobile phone if provided above, using an automatic dialer, or pre-recorded message. Message and data rates may apply. I understand that my consent is not a requirement for enrollment, and that I may withdraw my consent at any time.</div>",
+				name: "HomePhoneConsent",
+				options:[
+					{
+						label:"<!--100-->I acknowledge that, by clicking the checkbox as my official signature, I consent to representatives of Ashland University and/or QuinStreet Education Network contacting me about educational opportunities via email, text, or phone, including my mobile phone if provided above, using an automatic dialer, or pre-recorded message. Message and data rates may apply. I understand that my consent is not a requirement for enrollment, and that I may withdraw my consent at any time.",
+						selected:false,
+						value:"Yes"
+					}
+				],
+				type: "Checkbox",
+				value: ""
             }
         },
         "order":[  

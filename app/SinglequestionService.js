@@ -4,7 +4,7 @@
 mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataService', 'NotificationService', 'MyConfig', 'RouterService', '$injector', 'CommonValidationService', function($rootScope, $q, CBQService, UserDataService, NotificationService, MyConfig, RouterService, $injector, CommonValidationService){
 	var defaults = {
         callbacks: {},
-        current: 0,
+		
         steps: 0,		// steps can be set in controller if you need to break Single Question flow needs
 		preConditions: {},
         autoSubmit: false
@@ -12,7 +12,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 	return {
 		init: function(options){
 			angular.extend(this, defaults, options);
-			var self = this;
+			var deferred = $q.defer(), self = this;
 			
 			if(self.steps === 0)
 				self.steps = self.order.length;
@@ -21,7 +21,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 				self.callbacks['before_load'].call(self)
 			
 			// set current property of SingleQuestion object
-			self.setCurrentValue(self.current, function(){
+			self.initCurrentValue(0, function(){
 				// callback function - to broadcast 'currentUpdated' event once steps are validated and 'current' is updated
 				self.broadcastCurrent('load');
 				NotificationService.notify('singleQuestionInitialized');
@@ -30,7 +30,10 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 				
 				if(typeof self.callbacks['after_load'] === 'function')
 					self.callbacks['after_load'].call(self)
+					
+				deferred.resolve();
 			});
+			return deferred.promise;
 		},
 		isValidField: function(fieldName){	// method to validate individual field, fieldName is passed as parameter
 			var result = true, deferred = $q.defer(), data = UserDataService.getUserData(fieldName);
@@ -92,13 +95,22 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 		callInjectedServices: function(){		// Calls the dynamically injected services which are injected based on A/B tests.
 			var promises = [], stepDeferredObj = $q.defer();
 			angular.forEach(RouterService.getRouteData().dependencies, function(serviceName){
-				var deferred = $q.defer(), service = $injector.get(serviceName);
-				service.validate.call(service).then(function(result) {
-					deferred.resolve(result)
-				});
-				promises.push(deferred.promise);
+				var deferred, service;
+				// check if service exist and then only inject the service
+				$injector.has(serviceName) ? service = $injector.get(serviceName): console.error(serviceName + ': Service not found');
+				
+				// 'validate' will be a generic method in all the injected services to handle A/B tests with Single Question flow
+				if(service && typeof service.validate === 'function'){
+					// create deferred object for each Service
+					deferred = $q.defer()
+					service.validate.call(service).then(function(result) {
+						deferred.resolve(result)
+					});
+					promises.push(deferred.promise);
+				}
 			});
 			$q.all(promises).then(function(fieldResult){
+				// once all deferred object for Services are resolved, callInjectedServices promise is resolved
 				(fieldResult.indexOf(false) > -1) ? stepDeferredObj.resolve(false): stepDeferredObj.resolve(true)
 			})
 			return stepDeferredObj.promise
@@ -107,6 +119,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 			var promise = [], self = this;
 			
 			self.isValidSingleQuestionStep().then(function(result){
+				// Single Question step is valid then check for Dynamically injected services validations
 				if(result)
 					return self.callInjectedServices()
 			}).then(function(result){
@@ -137,12 +150,17 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 			})
 		},
 		showPrevious: function(){
+			var self = this;
 			if(typeof this.callbacks['before_prev'] === 'function')
 				this.callbacks['before_prev'].call(this)
 			
-			this.broadcastCurrent('previous')
-			if(typeof this.callbacks['after_prev'] === 'function')
-				this.callbacks['after_prev'].call(this)
+			this.broadcastCurrent('previous');
+			
+			// Call dynamically injected services once current is updated
+			this.callInjectedServices().then(function(){
+				if(typeof self.callbacks['after_prev'] === 'function')
+					self.callbacks['after_prev'].call(this)
+			})
 		},
 		broadcastCurrent: function(stepDirection){
 			var elementsToShow = [], elementsToHide = [];
@@ -224,19 +242,21 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 			// return array of promise objects of each field
 			return promises;
 		},
-		setCurrentValue: function(current, callback){
+		initCurrentValue: function(current, callback){
 			// method sets valid step index as current value of SingleQuestion object on init()
 			var promise = this.handleCBQPromise(current), self = this;
 			// set 'visible' property before validating current step
 			
 			$q.all(promise).then(function(data){
-				self.isValidSingleQuestionStep().then(function(result){
-					if(result){
+				self.isValidSingleQuestionStep(self.order[current]).then(function(result){
+					if(result && (typeof self.current === 'undefined' || current < self.current)){
 						// only if current step is valid increment current step
-						self.current = ++current;
+						++current;
 						// always pass callback to recursive function
-						self.setCurrentValue(self.current, callback)
+						self.initCurrentValue(current, callback)
 					}else if(typeof callback === "function") {
+						// finally set SingleQuestion object current equal to calculated current
+						self.current = current;
 						callback();
 					}
 				})
