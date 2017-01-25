@@ -3,7 +3,7 @@ angular.module('mainApp').controller('prequalController', ['$scope', '$q', '$inj
 	var data = RouterService.getRouteData();
 	angular.extend($scope, InitializationService.initialize(data));
 	
-	angular.forEach(RouterService.getRouteData().dependencies, function(serviceName){
+	angular.forEach(data.dependencies, function(serviceName){
 		$injector.has(serviceName) ? service = $injector.get(serviceName): console.error(serviceName + ': Service not found');
 	});
 	

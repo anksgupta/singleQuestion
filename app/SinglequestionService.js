@@ -26,8 +26,6 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 				self.broadcastCurrent('load');
 				NotificationService.notify('singleQuestionInitialized');
 				
-				MyConfig.SHOW_ERROR_MSG = true;
-				
 				if(typeof self.callbacks['after_load'] === 'function')
 					self.callbacks['after_load'].call(self)
 					
@@ -35,7 +33,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 			});
 			return deferred.promise;
 		},
-		isValidField: function(fieldName){	// method to validate individual field, fieldName is passed as parameter
+		isValidField: function(fieldName, setErrorMsg){	// method to validate individual field, fieldName is passed as parameter
 			var result = true, deferred = $q.defer(), data = UserDataService.getUserData(fieldName);
 		
 			UserDataService.clearRequiredFieldMsg(fieldName)
@@ -43,13 +41,13 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 			if((data.indexOf(null) > -1 || data.indexOf(MyConfig.CBQ_NOT_SHOWN) > -1) && UserDataService.getIsRequired(fieldName)) {	// check if field value contains a null value & is required.
 				if(UserDataService.getIsCBQ(fieldName)) {		// check if field is CBQ
 					if(UserDataService.getIsVisible(fieldName)){		// CBQ field is VISIBLE, then only it is considered as NOT valid
-						if(MyConfig.SHOW_ERROR_MSG)
+						if(setErrorMsg)
 							UserDataService.setRequiredFieldMsg(fieldName)
 							
 						result = false;
 					}	
 				} else {	// field is not CBQ then it is not valid as field is empty
-					if(MyConfig.SHOW_ERROR_MSG)
+					if(setErrorMsg)
 						UserDataService.setRequiredFieldMsg(fieldName)
 						
 					result = false
@@ -75,14 +73,14 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 			}
 			return deferred.promise
 		},
-		isValidSingleQuestionStep: function(field){		// method to validate Single Question step, one Single Question step can have multiple fields
-			if(!field)
-				field = this.order[this.current]
+		isValidSingleQuestionStep: function(obj){		// method to validate Single Question step, one Single Question step can have multiple fields
+			var field = (obj && obj.field) ? obj.field : this.order[this.current],
+				setErrorMsg = (obj && typeof obj.setErrorMsg !== 'undefined') ? obj.setErrorMsg : true;
 			
 			var promises = [], stepDeferredObj = $q.defer(), self = this;
 			angular.forEach(field, function(fieldName){
 				var deferred = $q.defer(); 	// creating deferred object outside foreach loop will always resolve last deferred object Promise 
-				self.isValidField(fieldName).then(function(result){
+				self.isValidField(fieldName, setErrorMsg).then(function(result){
 					deferred.resolve(result)
 				});
 				promises.push(deferred.promise);
@@ -248,7 +246,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 			// set 'visible' property before validating current step
 			
 			$q.all(promise).then(function(data){
-				self.isValidSingleQuestionStep(self.order[current]).then(function(result){
+				self.isValidSingleQuestionStep({field: self.order[current], setErrorMsg: false}).then(function(result){
 					if(result && (typeof self.current === 'undefined' || current < self.current)){
 						// only if current step is valid increment current step
 						++current;

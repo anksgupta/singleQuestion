@@ -1,4 +1,4 @@
-// Directive which dynamically creates form fields based on the input type
+// // Directive which dynamically creates form fields based on the input type
 mainApp.directive('generateField', ['MyConfig', '$compile', function(MyConfig, $compile) {
 		return {
 			restrict: 'E',
@@ -8,46 +8,126 @@ mainApp.directive('generateField', ['MyConfig', '$compile', function(MyConfig, $
 				field: '='
 			},
 			link: function (scope, element, attrs) {
-				var template = "<" + MyConfig.TEMPLATE_CONFIG[scope.fieldType] + " user='user' field='field'></" + MyConfig.TEMPLATE_CONFIG[scope.fieldType] + ">";
-				element.append($compile(template)(scope))
+				var templateConfig = MyConfig.TEMPLATE_CONFIG[scope.fieldType], fieldSpecificDirective, template, commonDirective;
+				if(typeof templateConfig !== 'undefined' && typeof templateConfig.fieldDirective !== 'undefined') {
+					template = "<" + templateConfig.fieldDirective + " user='user' field='field'";
+					
+					fieldSpecificDirective = templateConfig['fieldSpecificDirective'];
+					for(var key in fieldSpecificDirective) {
+						var elements = key.split(',');
+						if(elements.indexOf(scope.field.name) > -1) {
+							template += ' ' + templateConfig['fieldSpecificDirective'][key].split(',').join(' ')
+						}
+					}
+					
+					if(templateConfig[scope.fieldType + 'CommonDirective']) {
+						template += ' ' + templateConfig[scope.fieldType + 'CommonDirective'].split(',').join(' ');
+					}
+					
+					template += "></" + templateConfig.fieldDirective + ">";
+					element.append($compile(template)(scope))
+				}
 			}
 		}
 }]);
 
-// Tracking Directive 
-mainApp.directive('tracker', ['TrackingService', 'MyConfig', function(TrackingService, MyConfig) {
+// Directive that watches for changes in the user object & broadcasts the changed attr so that we need not bind watchers on user object in different directives.
+mainApp.directive('watchUserObj', ['$rootScope', 'NotificationService', function($rootScope, NotificationService) {
 		return {
 			restrict: 'E',
 			scope: {
 				user: '='
 			},
 			link: function (scope, element, attrs) {
-				for(var key in scope.user){
-					(function(key){
-						scope.$watch('user.' + key + '.value', function(newValue, oldValue) {
-							var log = {};
-							// Check if the values are different and CBQ_NOT_SHOWN is not present in any of the values.
-							if(!angular.equals(newValue, oldValue) && JSON.stringify(newValue).indexOf(MyConfig.CBQ_NOT_SHOWN) === -1) {
-								// If newValue & oldValue are objects, then log those fields whose values have changed.
-								if(typeof newValue === 'object' && typeof oldValue === 'object') {
-									for(var field in newValue) {
-										if(newValue[field] !== oldValue[field]) {
-											log[field] = newValue[field]
-										}
+				NotificationService.subscribe('watchUserObj', function(event, args){
+					for(var key in scope.user) {
+						(function(key){
+							scope.$watch('user.' + key + '.value', function(newValue, oldValue) {
+								$rootScope.$emit('fieldValueChanged', {
+									field: key,
+									newValue: newValue,
+									oldValue: oldValue
+								})
+							}, true);
+						}(key))
+					}
+					NotificationService.notify('watchUserObj')
+				})
+			}
+		}
+}]);
+
+// Tracking Directive 
+mainApp.directive('tracker', ['TrackingService', 'MyConfig', '$rootScope', 'NotificationService', function(TrackingService, MyConfig, $rootScope,NotificationService) {
+		return {
+			restrict: 'E',
+			scope: {
+				user: '='
+			},
+			link: function (scope, element, attrs) {
+				NotificationService.subscribe('repeatComplete', function(event, args){
+					$rootScope.$on('fieldValueChanged', function(event, args){
+						var log = {};
+						// Check if the values are different and CBQ_NOT_SHOWN is not present in any of the values.
+						if(!angular.equals(args.newValue, args.oldValue) && JSON.stringify(args.newValue).indexOf(MyConfig.CBQ_NOT_SHOWN) === -1) {
+							// If newValue & oldValue are objects, then log those fields whose values have changed.
+							if(typeof args.newValue === 'object' && typeof args.oldValue === 'object') {
+								for(var field in args.newValue) {
+									if(args.newValue[field] !== args.oldValue[field]) {
+										log[field] = args.newValue[field]
 									}
-								} else {
-									log[key] = newValue
 								}
-								for(field in log) {
-									TrackingService.log({
-										eventType: 'elem-change',
-										position: field + '_' + log[field]
-									})
+							} else {
+								log[args.field] = args.newValue
+							}
+							for(field in log) {
+								TrackingService.log({
+									eventType: 'elem-change',
+									position: field + '_' + log[field]
+								})
+							}
+						}
+					});
+					NotificationService.notify('repeatComplete')
+				});
+			}
+		}
+}]);
+
+// QS.Xapi_Values Directive 
+mainApp.directive('xapiValues', ['$compile', '$rootScope', 'MyConfig', 'NotificationService', function($compile, $rootScope, MyConfig, NotificationService) {
+		return {
+			restrict: 'E',
+			replace: true,
+			scope: {},
+			link: function (scope, element, attrs) {
+				var xapiValuesMetaTag = document.createElement('meta'), template = '<meta name="QS.Xapi_Values" content="{{content}}">', xapiAttrMap = {};
+
+				scope.content = {};
+				angular.element(document.querySelector('head')).append(($compile(template)(scope)));
+				
+				NotificationService.subscribe('repeatComplete', function(event, args){
+					$rootScope.$on('fieldValueChanged', function(event, args){
+						if(args.newValue && args.newValue !== MyConfig.CBQ_NOT_SHOWN) {
+							var elemName;
+							if(xapiAttrMap[args.field]){ // If data attr is present then fetch its value
+								elemName = xapiAttrMap[args.field]
+							}else{ // If not then iterate over the xengine map and add the data attr so that the next time there is no need to iterate
+								for(var xengineAttr in MyConfig.xengineAttributeMap){
+									if(MyConfig.xengineAttributeMap[xengineAttr].indexOf(args.field) > -1){
+										elemName = xengineAttr;
+										xapiAttrMap[args.field] = elemName
+										break
+									}
 								}
 							}
-						}, true);
-					}(key))
-				}
+							if(!scope.content[elemName] || scope.content[elemName] !== args.newValue) {
+								scope.content[elemName] = args.newValue
+							}
+						}
+					});
+					NotificationService.notify('repeatComplete')
+				})
 			}
 		}
 }]);
@@ -104,24 +184,29 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'UserData
 	return {
 		restrict: 'E',
 		replace: true,
+		// Set the highest priority so that it's link function is executed before all the other directives added as attributes on this directive.
+		priority: 1,
 		scope: {
 			user: '=',
 			field: '='
 		},
 		template: '<div ng-switch="field.is_single_col">' +
-					'<div ng-switch-when="true"><input ng-model-options="{\'updateOn\': \'blur\'}" name="qs-{{field.name}}" type="tel" maxlength="" placeholder="" ng-model="singlePhoneNumber.value"/></div>' +
+					'<div ng-switch-when="true"><input name="qs-{{field.name}}" type="tel" maxlength="" placeholder="" ng-model="singlePhoneNumber.value"/></div>' +
 					'<div ng-switch-when="false">' +
-						'<input id="{{field.name}}_AREA" ng-model-options="{\'updateOn\': \'blur\'}" name="{{field.name}}_AREA" type="tel" maxlength="3" placeholder="" ng-model="area.value"/>' +
-						'<input id="{{field.name}}_PREFIX" ng-model-options="{\'updateOn\': \'blur\'}" name="{{field.name}}_PREFIX" type="tel" maxlength="3" placeholder="" ng-model="prefix.value"/>' +
-						'<input id="{{field.name}}_NUMBER" ng-model-options="{\'updateOn\': \'blur\'}" name="{{field.name}}_NUMBER" type="tel" maxlength="4" placeholder="" ng-model="number.value"/>' +
+						'<input id="{{field.name}}_AREA" name="{{field.name}}_AREA" type="tel" maxlength="3" placeholder="" ng-model="area.value"/>' +
+						'<input id="{{field.name}}_PREFIX" name="{{field.name}}_PREFIX" type="tel" maxlength="3" placeholder="" ng-model="prefix.value"/>' +
+						'<input id="{{field.name}}_NUMBER" name="{{field.name}}_NUMBER" type="tel" maxlength="4" placeholder="" ng-model="number.value"/>' +
 					'</div>' +
 			    '</div>',
-		link: function(scope, element, attrs){
+		// Add the controller so that it can be shared with other directives added as attributes on this directive.
+		controller: ['$scope', function($scope){}],
+		link: function(scope, element, attrs, controller){
 			// Check the implementation for $watch. It dosesn't fire when we watch a primitive value inside a directive. We have implemented a work around at the moment. Need to revisit this implementation.
 			NotificationService.subscribe('repeatComplete', function(event, args){
 				var fieldName = scope.field.name, prefixElem, numberElem;
 				if(scope.field.is_single_col) {
-					scope.singlePhoneNumber = {};
+					// Bind the singlePhoneNumber to the controller so that is can be accessed in other directives added as attributes on this directive.
+					controller.singlePhoneNumber = scope.singlePhoneNumber = {};
 					scope.singlePhoneNumber.value = scope.user[fieldName].value[fieldName + "_AREA"] + 
 										scope.user[fieldName].value[fieldName + "_PREFIX"] +
 										scope.user[fieldName].value[fieldName + "_NUMBER"];
@@ -177,10 +262,14 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'UserData
 mainApp.directive("homePhoneConsent",['UserDataService', 'TcpaService', function(UserDataService, TcpaService){
 	return {
 		restrict: 'E',
+		// Set the highest priority so that it's link function is executed before all the other directives' added as attributes on this directive.
+		priority: 1,
 		scope: {
 			user: '=',
 			field: '='
 		},
+		// Add the controller so that it can be shared with other directives added as attributes on this directive.
+		controller: ['$scope', function($scope){}],
 		template: '<div ng-switch="field.type">' + 
 					'<div ng-switch-when="Text">' +
 						'<label>' + 
@@ -195,12 +284,12 @@ mainApp.directive("homePhoneConsent",['UserDataService', 'TcpaService', function
 							/* For checkbox case, LeadID will read value only if checkbox is checked.
 							   In case checked attribute is set using javascript, Passive consent issue may occur from LeadID
 							   so we've used ng-if to show/hide HTML input with checked attribute */ 
-							'<input ng-if="isChecked==\'field.value\'" name="HomePhoneConsent" type="checkbox" checked value="{{field.value}}" ng-model="user[field.name].value" ng-change="setValue()" ng-true-value="{{field.value}}" ng-false-value="\'\'"/>' + 
-							'<input ng-if="isChecked!=\'field.value\'" name="HomePhoneConsent" type="checkbox" value="{{field.value}}" ng-model="user[field.name].value" ng-change="setValue()" ng-true-value="{{field.value}}" ng-false-value="\'\'"/>' + 
+							'<input ng-if="isChecked==option.value" name="HomePhoneConsent" type="checkbox" checked value="{{option.value}}" ng-model="user[field.name].value" ng-change="setValue()" ng-true-value="\'{{option.value}}\'" ng-false-value="\'\'"/>' + 
+							'<input ng-if="isChecked!=option.value" name="HomePhoneConsent" type="checkbox" value="{{option.value}}" ng-model="user[field.name].value" ng-change="setValue()" ng-true-value="\'{{option.value}}\'" ng-false-value="\'\'"/>' + 
 							'<span>{{option.label}}</span>' + 
 						'</label>' + 
 					'</div>',
-		link: function(scope, element, attrs){
+		link: function(scope, element, attrs, controller){
 			// HomePhoneConsent field is hidden/shown coz of ng-hide class(!important).
 			scope.$on('ShowPhoneConsent', function(event, args){
 				var consentContainer = document.getElementById('input-HomePhoneConsent');
@@ -241,14 +330,46 @@ mainApp.directive("homePhoneConsent",['UserDataService', 'TcpaService', function
 	}
 }]);
 
+// Phonefield placeholder Directive 
+mainApp.directive('placeHolder', ['NotificationService', 'UserDataService', function(NotificationService, UserDataService) {
+		return {
+			restrict: 'A',
+			// Set a priority higher than phoneField so that it's link function is executed after phoneField's link function.
+			priority: 2,
+			require: "phoneField", // To access phoneField's controller, we have to pass the 'require' parameter
+			link: function (scope, element, attrs, phoneCtrl) {
+				// phoneCtrl is phoneField's controller. We use it to access the singlePhoneNumber object.
+				NotificationService.subscribe('repeatComplete', function(event, args){
+					// Bind a watcher on phoneCtrl.singlePhoneNumber and format the phone number.
+					scope.singlePhoneNumber = phoneCtrl.singlePhoneNumber;
+					scope.$watch('singlePhoneNumber.value', function(newValue, oldValue) {
+						if(newValue) {
+							newValue = newValue.replace(/[^0-9]/g, '');
+							
+							area = newValue.substring(0, 3);
+							prefix = newValue.substring(3, 6);
+							number = newValue.substring(6);
+							scope.singlePhoneNumber.value = ((area.length === 3 ? '(' + area : area) + (prefix.length > 0 ? ') ' + prefix : '') + (number.length > 0 ? '-' + number : ''))
+						}
+					});
+					NotificationService.notify('repeatComplete')
+				});
+			}
+		}
+}]);
+
 // Select field directive
 mainApp.directive("selectField", function(){
 	return {
 		restrict: 'E',
+		// Set the highest priority so that it's link function is executed before all the other directives' added as attributes on this directive.
+		priority: 1,
 		scope: {
 			user: '=',
 			field: '='
 		},
+		// Add the controller so that it can be shared with other directives added as attributes on this directive.
+		controller: ['$scope', function($scope){}],
 		template: '<select name="qs-{{field.name}}" ng-model="user[field.name].value" ng-options="option.value as option.label for option in field.options">' + '<option value="" hidden>-- Select One --</option></select>' +
 		'<field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>'
 	}
@@ -273,17 +394,21 @@ mainApp.directive("generateFieldByType", function(){
 mainApp.directive("textField", function(){
 	return {
 		restrict: 'E',
+		// Set the highest priority so that it's link function is executed before all the other directives' added as attributes on this directive.
+		priority: 1,
 		scope: {
 			user: '=',
 			field: '='
 		},
+		// Add the controller so that it can be shared with other directives added as attributes on this directive.
+		controller: ['$scope', function($scope){}],
 		// ng-model-options are passed so that model will be updated only when the focus is lost.
 		template: 
 			'<div>' + 
-				'<input name="qs-{{field.name}}" ng-model="user[field.name].value" ng-model-options="{\'updateOn\': \'blur\'}"/>' + 
+				'<input name="qs-{{field.name}}" ng-model="user[field.name].value" ng-model-options="{\'debounce\': 1000}"/>' + 
 				'<field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>' + 
 			'</div>',
-		link: function(scope, element, attrs){}
+		link: function(scope, element, attrs, controller){}
 	}
 });
 
@@ -291,10 +416,14 @@ mainApp.directive("textField", function(){
 mainApp.directive("checkboxField", function(){
 	return {
 		restrict: 'E',
+		// Set the highest priority so that it's link function is executed before all the other directives' added as attributes on this directive.
+		priority: 1,
 		scope: {
 			user: '=',
 			field: '='
 		},
+		// Add the controller so that it can be shared with other directives added as attributes on this directive.
+		controller: ['$scope', function($scope){}],
 		template: '<div>' + 
 					'<label ng-repeat="option in field.options">' + 
 						'<input type="checkbox" name="qs-{{field.name}}" ng-true-value="\'{{option.value}}\'" ng-false-value="\'\'" ng-change="setValue(option)" ng-model="option.checked"/>' + 
@@ -302,7 +431,7 @@ mainApp.directive("checkboxField", function(){
 					'</label>' + 
 					'<field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>' + 
 				'</div>',
-		link: function(scope, element, attrs){
+		link: function(scope, element, attrs, controller){
 			var values = scope.user[scope.field.name].value.split(',');
 			if(values.length > 0){
 				for(var option = 0, valueIndex; option < scope.field.options.length; option++){
@@ -344,12 +473,16 @@ mainApp.directive("fieldActualValue", function(){
 mainApp.directive("radioInTable", function(){
 	return {
 		restrict: 'E',
+		// Set the highest priority so that it's link function is executed before all the other directives' added as attributes on this directive.
+		priority: 1,
 		scope: {
 			user: '=',
 			field: '='
 		},
 		template: '<div ng-click="updateModel(field.name, option.value)" ng-class="{myclass: option.value == user[field.name].value}" ng-repeat="option in 	' 			+ 'field.options">{{option.label}}</div><field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>',
-		link: function(scope, element, attrs){
+		// Add the controller so that it can be shared with other directives added as attributes on this directive.
+		controller: ['$scope', function($scope){}],
+		link: function(scope, element, attrs, controller){
 			scope.updateModel = function(fieldName, value) {
 				if(scope.user[fieldName].value === value)
 					scope.user[fieldName].unchanged = new Date().getTime()  // flag to handle a case in which user clicks on the same option and shownext should be called
@@ -363,10 +496,14 @@ mainApp.directive("radioInTable", function(){
 mainApp.directive("customSelect", function(){
 	return {
 		restrict: 'E',
+		// Set the highest priority so that it's link function is executed before all the other directives' added as attributes on this directive.
+		priority: 1,
 		scope: {
 			user: '=',
 			field: '='
 		},
+		// Add the controller so that it can be shared with other directives added as attributes on this directive.
+		controller: ['$scope', function($scope){}],
 		template: '<div class="select-container">' + 
 					'<span class="selected-text">{{user[field.name].value}}</span>' + 
 					'<ul name="{{field.name}}" ng-model="user[field.name]">'+
@@ -375,7 +512,7 @@ mainApp.directive("customSelect", function(){
 					'<select name="qs-{{field.name}}" ng-model="user[field.name]" ng-options="option.value as option.label for option in field.options"></select>' + 
 					'<field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>' +
 				'</div>',
-	    link: function(scope, element, attrs) {
+	    link: function(scope, element, attrs, controller) {
 			var fieldName = scope.field.name;
 			scope.updateModel = function(value) {
 				if(scope.user[fieldName].value === value)
@@ -517,7 +654,7 @@ mainApp.directive('submitBtn', ['HttpService', '$rootScope', 'UserDataService', 
 }]);
 
 // SingleQuestion directive
-mainApp.directive('singleQuestionDirective',['$rootScope', 'SingleQuestion', 'SingleQStepVisibilityService', 'NotificationService', function($rootScope, SingleQuestion, SingleQStepVisibilityService, NotificationService) {
+mainApp.directive('singleQuestionDirective',['$rootScope', 'SingleQuestion', 'SingleQStepVisibilityService', 'NotificationService', 'MyConfig', function($rootScope, SingleQuestion, SingleQStepVisibilityService, NotificationService, MyConfig) {
 	return {
         restrict: 'E',
         scope: {
@@ -558,7 +695,7 @@ mainApp.directive('singleQuestionDirective',['$rootScope', 'SingleQuestion', 'Si
 						} else if((SingleQuestion.getCBQVisibleFieldObj()[0].type).toLowerCase() === "text") {
 							nextBtnElem.removeClass('ng-hide')
 						} else{
-							SingleQuestion.isValidSingleQuestionStep().then(function(result){
+							SingleQuestion.isValidSingleQuestionStep({setErrorMsg: false}).then(function(result){
 								result ? nextBtnElem.removeClass('ng-hide') : nextBtnElem.addClass('ng-hide');
 							});
 						}
@@ -584,23 +721,18 @@ mainApp.directive('singleQuestionDirective',['$rootScope', 'SingleQuestion', 'Si
 				
 				SingleQuestion.init(scope.singleQuestionOptions).then(function(){
 					// Bind watchers only after SingleQuestion init method is resolved.
-					for(var i = 0;i < SingleQuestion.order.length; i++){
-						var step = SingleQuestion.order[i];
-						for(var j = 0;j < step.length; j++){
-							(function(field){
-								scope.$watch('user.' + field + '.value', function(newValue, oldValue) {
-									var conditionArray = [!angular.equals(newValue, oldValue),
-															SingleQuestion.getCBQVisibleFieldObj().length === 1,
-															typesToIgnore.indexOf(SingleQuestion.getCBQVisibleFieldObj()[0].type) === -1,
-															newValue !== "CBQ_NOT_SHOWN" && oldValue !== "CBQ_NOT_SHOWN"];
-									if(eval(conditionArray.join('&&'))){
-										// If current order has only one visible field, then call ShowNext on model update.
-										SingleQuestion.showNext()
-									}
-								});
-							}(step[j]))
-						}			
-					}
+					$rootScope.$on('fieldValueChanged', function(event, args){
+						var conditionArray = [!angular.equals(args.newValue, args.oldValue),
+												SingleQuestion.getCBQVisibleFieldObj().length === 1,
+												typesToIgnore.indexOf(SingleQuestion.getCBQVisibleFieldObj()[0].type) === -1,
+												args.newValue !== MyConfig.CBQ_NOT_SHOWN && args.oldValue !== MyConfig.CBQ_NOT_SHOWN];
+						if(eval(conditionArray.join('&&'))){
+							// If current order has only one visible field, then call ShowNext on model update.
+							SingleQuestion.showNext()
+						}
+					});
+					
+					NotificationService.notify('singleQuestionInitialized')
 				});
 				
 			});

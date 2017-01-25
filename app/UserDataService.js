@@ -32,7 +32,7 @@ mainApp.factory("UserDataService", ['MyConfig', '$q', function(MyConfig, $q){
 				}
 				return valueArr
 			}
-			valueArr.push(fieldValue);
+			valueArr.push(fieldValue ? fieldValue : null);
 			return valueArr
 		},
 		getHiddenField: function(field){
