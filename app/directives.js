@@ -1,4 +1,4 @@
-// // Directive which dynamically creates form fields based on the input type
+// Directive which dynamically creates form fields based on the input type
 mainApp.directive('generateField', ['MyConfig', '$compile', function(MyConfig, $compile) {
 		return {
 			restrict: 'E',
@@ -36,7 +36,8 @@ mainApp.directive('watchUserObj', ['$rootScope', 'NotificationService', function
 		return {
 			restrict: 'E',
 			scope: {
-				user: '='
+				user: '=',
+				field: '='
 			},
 			link: function (scope, element, attrs) {
 				NotificationService.subscribe('watchUserObj', function(event, args){
@@ -44,10 +45,10 @@ mainApp.directive('watchUserObj', ['$rootScope', 'NotificationService', function
 						(function(key){
 							scope.$watch('user.' + key + '.value', function(newValue, oldValue) {
 								$rootScope.$emit('fieldValueChanged', {
-									field: key,
-									newValue: newValue,
-									oldValue: oldValue
-								})
+										field: key,
+										newValue: newValue,
+										oldValue: oldValue
+									})
 							}, true);
 						}(key))
 					}
@@ -62,33 +63,58 @@ mainApp.directive('tracker', ['TrackingService', 'MyConfig', '$rootScope', 'Noti
 		return {
 			restrict: 'E',
 			scope: {
-				user: '='
+				fields: "="
 			},
 			link: function (scope, element, attrs) {
+				var textFieldValueMap = {};
 				NotificationService.subscribe('repeatComplete', function(event, args){
 					$rootScope.$on('fieldValueChanged', function(event, args){
-						var log = {};
-						// Check if the values are different and CBQ_NOT_SHOWN is not present in any of the values.
+						// Check if the values are different and CBQ_NOT_SHOWN is not present in any of the values and call tracking service only for fields other than text fields. For text fields, cache the values.
 						if(!angular.equals(args.newValue, args.oldValue) && JSON.stringify(args.newValue).indexOf(MyConfig.CBQ_NOT_SHOWN) === -1) {
-							// If newValue & oldValue are objects, then log those fields whose values have changed.
-							if(typeof args.newValue === 'object' && typeof args.oldValue === 'object') {
-								for(var field in args.newValue) {
-									if(args.newValue[field] !== args.oldValue[field]) {
-										log[field] = args.newValue[field]
-									}
-								}
+							if(MyConfig.textTypes.indexOf(scope.fields[args.field].type.toLowerCase()) > -1) {
+								textFieldValueMap[args.field] = {args: args, modified: true}
+								// modified flag ensures that if value is not changed but blur is called(user might focus the text field & blur the field withour changing its value), then the same value is not tracked again & again.
 							} else {
-								log[args.field] = args.newValue
-							}
-							for(field in log) {
-								TrackingService.log({
-									eventType: 'elem-change',
-									position: field + '_' + log[field]
-								})
+								fireTracker(args)
 							}
 						}
 					});
 					NotificationService.notify('repeatComplete')
+				});
+				
+				function fireTracker(args) {
+					var log = {};
+					// If newValue & oldValue are objects, then log those fields whose values have changed.
+					if(typeof args.newValue === 'object' && typeof args.oldValue === 'object') {
+						// For text fields(like single phonefields), consider the below scenario:
+						// The prev value is 650-578-6496. User modifies the value to 650-57. In this case, ideally these values should be the old & new value respectively.
+						// But as we call fireTracker on blur, the new & old values are 650-57 & 650-578 coz model will be updated on every keyup. So the value logged is prefix_57 whereas both prefix & number should have been logged.
+						// So for now we're logging all the values of that particular object.
+							
+						/*for(var field in args.newValue) {
+							if(args.newValue[field] !== args.oldValue[field]) {
+								log[field] = args.newValue[field]
+							}
+						}*/
+						log = args.newValue
+					} else {
+						log[args.field] = args.newValue
+					}
+					for(field in log) {
+						TrackingService.log({
+							eventType: 'elem-change',
+							position: field + '_' + log[field]
+						})
+					}
+				}
+				
+				// Track the text element's value when textValueUpdatedOnBlur is triggered.
+				$rootScope.$on('textValueUpdatedOnBlur', function(event, args){
+					if(textFieldValueMap[args.field] && textFieldValueMap[args.field].modified) {
+						fireTracker(textFieldValueMap[args.field].args);
+						// Set the modified flag to false to ensure that the same value is not tracked again & again.
+						textFieldValueMap[args.field].modified = false
+					}
 				});
 			}
 		}
@@ -180,7 +206,7 @@ mainApp.directive('elemReady', ['$rootScope', 'NotificationService', function($r
 }])
 
 // Home phone directive
-mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'UserDataService', '$rootScope', function(TcpaService, NotificationService, UserDataService, $rootScope){
+mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'UserDataService', '$rootScope', '$timeout', function(TcpaService, NotificationService, UserDataService, $rootScope, $timeout){
 	return {
 		restrict: 'E',
 		replace: true,
@@ -191,11 +217,11 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'UserData
 			field: '='
 		},
 		template: '<div ng-switch="field.is_single_col">' +
-					'<div ng-switch-when="true"><input name="qs-{{field.name}}" type="tel" maxlength="" placeholder="" ng-model="singlePhoneNumber.value"/></div>' +
+					'<div ng-switch-when="true"><input text-field-blur name="qs-{{field.name}}" type="tel" maxlength="" placeholder="" ng-model="singlePhoneNumber.value"/></div>' +
 					'<div ng-switch-when="false">' +
-						'<input id="{{field.name}}_AREA" name="{{field.name}}_AREA" type="tel" maxlength="3" placeholder="" ng-model="area.value"/>' +
-						'<input id="{{field.name}}_PREFIX" name="{{field.name}}_PREFIX" type="tel" maxlength="3" placeholder="" ng-model="prefix.value"/>' +
-						'<input id="{{field.name}}_NUMBER" name="{{field.name}}_NUMBER" type="tel" maxlength="4" placeholder="" ng-model="number.value"/>' +
+						'<input id="{{field.name}}_AREA" text-field-blur name="{{field.name}}_AREA" type="tel" maxlength="3" placeholder="" ng-model="area.value"/>' +
+						'<input id="{{field.name}}_PREFIX" text-field-blur name="{{field.name}}_PREFIX" type="tel" maxlength="3" placeholder="" ng-model="prefix.value"/>' +
+						'<input id="{{field.name}}_NUMBER" text-field-blur name="{{field.name}}_NUMBER" type="tel" maxlength="4" placeholder="" ng-model="number.value"/>' +
 					'</div>' +
 			    '</div>',
 		// Add the controller so that it can be shared with other directives added as attributes on this directive.
@@ -223,7 +249,9 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'UserData
 							});
 						scope.user[fieldName].value[fieldName + "_AREA"] = phoneNumber.substring(0, 3);
 						scope.user[fieldName].value[fieldName + "_PREFIX"] = phoneNumber.substring(3, 6);
-						scope.user[fieldName].value[fieldName + "_NUMBER"] = phoneNumber.substring(6)
+						scope.user[fieldName].value[fieldName + "_NUMBER"] = phoneNumber.substring(6);
+						
+						$rootScope.$emit('singlePhoneFieldUpdated', {newValue: newValue})
 					});
 				} else {
 					scope.area = {value: scope.user[fieldName].value[fieldName + "_AREA"]};
@@ -237,20 +265,28 @@ mainApp.directive("phoneField", ['TcpaService', 'NotificationService', 'UserData
 						var phoneNumber = scope.area.value + scope.prefix.value + scope.number.value,
 							contactMe = UserDataService.getUserData('ContactMe');
 						TcpaService.handleTCPA({
-								number: phoneNumber, 
-								contactMe: (contactMe.indexOf(null) > -1) ? false : contactMe.join(''),
-								fieldName: fieldName
-							}).then(function(){
-								NotificationService.notify('repeatComplete');
-							});
-						if (newValues[0] !== oldValues[0] && (newValues[0].length === 3)){ // Check if area is changed & length === maxlength, then move cursor to prefix field
-							prefixElem.focus();
-						}else if (newValues[1] !== oldValues[1] && (newValues[1].length === 3)){ // Check if prefix is changed & length === maxlength, then move cursor to number field
-							numberElem.focus();
-						}
+							number: phoneNumber, 
+							contactMe: (contactMe.indexOf(null) > -1) ? false : contactMe.join(''),
+							fieldName: fieldName
+						}).then(function(){
+							NotificationService.notify('repeatComplete');
+						});
+						
 						scope.user[fieldName].value[fieldName + "_AREA"] = newValues[0];
 						scope.user[fieldName].value[fieldName + "_PREFIX"] = newValues[1];
-						scope.user[fieldName].value[fieldName + "_NUMBER"] = newValues[2]
+						scope.user[fieldName].value[fieldName + "_NUMBER"] = newValues[2];
+						
+						if (newValues[0] !== oldValues[0] && (newValues[0].length === 3)){ // Check if area is changed & length === maxlength, then move cursor to prefix field
+							// Setting the focus without a timeout wasn't firing the blur event for the area element(blur event is needed to track the changed value).
+							$timeout(function(){
+								prefixElem.focus();
+							});
+						}else if (newValues[1] !== oldValues[1] && (newValues[1].length === 3)){ // Check if prefix is changed & length === maxlength, then move cursor to number field
+							// Setting the focus without a timeout wasn't firing the blur event for the prefix element(blur event is needed to track the changed value).
+							$timeout(function(){
+								numberElem.focus();
+							});
+						}
 					}, true);
 				}
 			});
@@ -331,7 +367,7 @@ mainApp.directive("homePhoneConsent",['UserDataService', 'TcpaService', function
 }]);
 
 // Phonefield placeholder Directive 
-mainApp.directive('placeHolder', ['NotificationService', 'UserDataService', function(NotificationService, UserDataService) {
+mainApp.directive('placeHolder', ['NotificationService', 'UserDataService', '$rootScope', function(NotificationService, UserDataService, $rootScope) {
 		return {
 			restrict: 'A',
 			// Set a priority higher than phoneField so that it's link function is executed after phoneField's link function.
@@ -339,21 +375,22 @@ mainApp.directive('placeHolder', ['NotificationService', 'UserDataService', func
 			require: "phoneField", // To access phoneField's controller, we have to pass the 'require' parameter
 			link: function (scope, element, attrs, phoneCtrl) {
 				// phoneCtrl is phoneField's controller. We use it to access the singlePhoneNumber object.
-				NotificationService.subscribe('repeatComplete', function(event, args){
-					// Bind a watcher on phoneCtrl.singlePhoneNumber and format the phone number.
-					scope.singlePhoneNumber = phoneCtrl.singlePhoneNumber;
-					scope.$watch('singlePhoneNumber.value', function(newValue, oldValue) {
-						if(newValue) {
-							newValue = newValue.replace(/[^0-9]/g, '');
-							
-							area = newValue.substring(0, 3);
-							prefix = newValue.substring(3, 6);
-							number = newValue.substring(6);
-							scope.singlePhoneNumber.value = ((area.length === 3 ? '(' + area : area) + (prefix.length > 0 ? ') ' + prefix : '') + (number.length > 0 ? '-' + number : ''))
-						}
+				if(scope.field.is_single_col) {
+					NotificationService.subscribe('repeatComplete', function(event, args){
+						// Listen for singlePhoneFieldUpdated event and format the phone number using phonefield's controller so that the original object is updated as well.
+						$rootScope.$on('singlePhoneFieldUpdated', function(event, args){
+							if(args.newValue) {
+								newValue = args.newValue.replace(/[^0-9]/g, '');
+								
+								area = newValue.substring(0, 3);
+								prefix = newValue.substring(3, 6);
+								number = newValue.substring(6);
+								phoneCtrl.singlePhoneNumber.value = ((area.length === 3 ? '(' + area : area) + (prefix.length > 0 ? ') ' + prefix : '') + (number.length > 0 ? '-' + number : ''))
+							}
+						});
+						NotificationService.notify('repeatComplete')
 					});
-					NotificationService.notify('repeatComplete')
-				});
+				}
 			}
 		}
 }]);
@@ -405,12 +442,25 @@ mainApp.directive("textField", function(){
 		// ng-model-options are passed so that model will be updated only when the focus is lost.
 		template: 
 			'<div>' + 
-				'<input name="qs-{{field.name}}" ng-model="user[field.name].value" ng-model-options="{\'debounce\': 1000}"/>' + 
+				'<input name="qs-{{field.name}}" text-field-blur ng-model="user[field.name].value"/>' + 
 				'<field-actual-value user="user" field-name="{{field.name}}"></field-actual-value>' + 
 			'</div>',
 		link: function(scope, element, attrs, controller){}
 	}
 });
+
+// Text field blur directive
+mainApp.directive("textFieldBlur", ['$rootScope', function($rootScope){
+	return {
+		restrict: 'A',
+		link: function(scope, element, attrs){
+			element.on('blur', function(event) {
+				// Broadcast textValueUpdatedOnBlur event which is handled in the tracker directive.
+				$rootScope.$emit('textValueUpdatedOnBlur', {field: scope.field.name})
+			});
+		}
+	}
+}]);
 
 // Checkbox field directive
 mainApp.directive("checkboxField", function(){
@@ -570,7 +620,7 @@ mainApp.directive('directiveIf', ['$compile',
                         // (otherwise we can't use this directive multiple times).
                         // 
                         // It should be safe to reset here because we will
-                        // only reach this code *after* the `$compile()`
+                        // only reach this code *after* the '$compile()'
                         // call above has returned.
                         compileGuard = 0;
 

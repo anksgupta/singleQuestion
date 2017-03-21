@@ -1,6 +1,7 @@
 var mainApp = angular.module('mainApp', ['ui.router', 'oc.lazyLoad']);
 
 mainApp.constant('MyConfig', {
+	textTypes: ['phoneformat', 'text', 'tel'],
 	CBQ_NOT_SHOWN: 'CBQ_NOT_SHOWN',
 	/**
 	 * key in TEMPLATE_CONFIG is the element type.
@@ -25,7 +26,7 @@ mainApp.constant('MyConfig', {
 			PhoneFormatCommonDirective: 'common-phone-dir',
 			fieldSpecificDirective: {
 				'HP,WP': 'test-dir',
-				'HP': 'place-holder'
+				'WP': 'place-holder'
 			}
 		}
 	},
