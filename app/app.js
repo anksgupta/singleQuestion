@@ -1,7 +1,7 @@
 var mainApp = angular.module('mainApp', ['ui.router', 'oc.lazyLoad']);
 
 mainApp.constant('MyConfig', {
-	textTypes: ['phoneformat', 'text', 'tel'],
+	textTypes: ['phoneformat', 'text', 'tel', 'date'],
 	CBQ_NOT_SHOWN: 'CBQ_NOT_SHOWN',
 	/**
 	 * key in TEMPLATE_CONFIG is the element type.
@@ -21,6 +21,7 @@ mainApp.constant('MyConfig', {
 		'ActualText': {fieldDirective: 'text-field'},
 		'ActualCheckbox': {fieldDirective: 'checkbox-field'},
 		'HomePhoneConsent': {fieldDirective: 'home-phone-consent'},
+		'Date': {fieldDirective: 'date-field'},
 		'PhoneFormat': {
 			fieldDirective: 'phone-field',
 			PhoneFormatCommonDirective: 'common-phone-dir',

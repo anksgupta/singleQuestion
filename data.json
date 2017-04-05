@@ -23,7 +23,18 @@
             "required":true,
             "type":"plaintext"
         },
-        "fields":{  
+        "fields":{
+			"MilitarySeparation":{  
+                "name":"MilitarySeparation",
+                "type":"Date",
+                "label":"MilitarySeparation?",
+                "is_cbq":false,
+                "value":"",
+                "is_hidden":false,
+                "is_required":true,
+                "format":"DD-MM-YYYY",
+                "error_message":""
+			},
             "ProgramsOfInterestType":{  
                 "name":"ProgramsOfInterestType",
                 "type":"Select",
@@ -34,7 +45,7 @@
                 "is_required":true,
                 "is_valid":true,
                 "error_message":"",
-                "options":[  
+                "options":[
                     {  
                         "label":"<!--1000-->Fire Science and Emergency Management",
                         "selected":false,
@@ -92,6 +103,244 @@
                     }
                 ]
             },
+			"ProgramOfInterest": {
+				"name": "ProgramOfInterest",
+				"type": "Select",
+				"label": "What is your program of interest?",
+				"is_cbq": false,
+				"value": "BSHIT",
+				"is_hidden": false,
+				"is_required": true,
+				"is_valid": true,
+				"error_message": "",
+				"options": [
+				   {
+					  "is_group": true,
+					  "is_qual": false,
+					  "label": "Other Programs Offered at this School",
+					  "type": "other",
+					  "value": "",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Health Information Management",
+					  "value": "BSHIT",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Health Science",
+					  "value": "BSHS",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Health and Wellness",
+					  "value": "BSHW",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Human Services",
+					  "value": "BSHSV",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Human Services - Child and Family Welfare",
+					  "value": "BSHUS_CFW",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Human Services - Gerontology",
+					  "value": "BSHUS_G",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Human Services - Human Services Administration",
+					  "value": "BSHUS_HSA",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Legal Studies",
+					  "value": "BSLS",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Liberal Studies",
+					  "value": "BSLIS",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Liberal Studies Leadership",
+					  "value": "BSLISLLS",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Nutrition Science",
+					  "value": "BSNS",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Paralegal Studies",
+					  "value": "BSPS",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Psychology",
+					  "value": "BSPYS",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Psychology - Applied Behavior Analysis Emphasis Area",
+					  "value": "BSPY_ABA",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Psychology - Child Development",
+					  "value": "BSPY_CD",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BS in Psychology - Substance Addictions",
+					  "value": "BSPY_SA",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BSBA - Investment\t\t\t",
+					  "value": "KCBSBA_INV",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BSIT/ Information  Systems Track - Multiplatform Software Development",
+					  "value": "BSSD",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "BSPY - Industrial/Organizational Psychology\t\t\t",
+					  "value": "KBSPY_IOP",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "CCAF  - Associate to Baccalaureate Cooperative Program (AUABC) (Military Only)",
+					  "value": "252_ABCP_BACH",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": true,
+					  "is_qual": true,
+					  "label": "Bachelor Completion and Bridge Degrees",
+					  "value": "",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "Bachelors of Science in Nursing - RN to BSN",
+					  "value": "BSN",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": true,
+					  "is_qual": true,
+					  "label": "Master's Degrees",
+					  "value": "",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "Accelerated MS in Nursing",
+					  "value": "RNMSN",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "MA in Teaching (for Aspiring Teachers Grades 5-12)",
+					  "value": "MAT",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "MBA - Information Technology",
+					  "value": "MBA_IT",
+					  "selected": false
+				   },
+				   {
+					  "type": "other",
+					  "is_group": false,
+					  "is_qual": false,
+					  "label": "MS in Criminal Justice - Leadership/Executive Management",
+					  "value": "MSCJ_LEM",
+					  "selected": false
+				   }
+				],
+				"has_condense": false
+			 },
             "DegreeStartTimeframe":{  
                 "name":"DegreeStartTimeframe",
                 "type":"RadioInTable",
@@ -536,7 +785,7 @@
             },
             "Military":{  
                 "name":"Military",
-                "type":"CustomSelect",
+                "type":"Select",
                 "label":"What is your affiliation with the U.S. Military?",
                 "is_cbq":false,
                 "value":"",
@@ -727,27 +976,30 @@
                 "error_message":""
             },
             "HomePhoneConsent":{  
-                error_message: "Required field",
-				is_cbq: false,
-				is_hidden: false,
-				is_required: true,
-				is_valid: false,
-				label: "<div style=\"display:none\">I acknowledge that, by clicking the checkbox as my official signature, I consent to representatives of Ashland University and/or QuinStreet Education Network contacting me about educational opportunities via email, text, or phone, including my mobile phone if provided above, using an automatic dialer, or pre-recorded message. Message and data rates may apply. I understand that my consent is not a requirement for enrollment, and that I may withdraw my consent at any time.</div>",
-				name: "HomePhoneConsent",
-				options:[
+                "error_message": "Required field",
+				"is_cbq": false,
+				"is_hidden": false,
+				"is_required": true,
+				"is_valid": false,
+				"label": "<div style=\"display:none\">I acknowledge that, by clicking the checkbox as my official signature, I consent to representatives of Ashland University and/or QuinStreet Education Network contacting me about educational opportunities via email, text, or phone, including my mobile phone if provided above, using an automatic dialer, or pre-recorded message. Message and data rates may apply. I understand that my consent is not a requirement for enrollment, and that I may withdraw my consent at any time.</div>",
+				"name": "HomePhoneConsent",
+				"options":[
 					{
-						label:"<!--100-->I acknowledge that, by clicking the checkbox as my official signature, I consent to representatives of Ashland University and/or QuinStreet Education Network contacting me about educational opportunities via email, text, or phone, including my mobile phone if provided above, using an automatic dialer, or pre-recorded message. Message and data rates may apply. I understand that my consent is not a requirement for enrollment, and that I may withdraw my consent at any time.",
-						selected:false,
-						value:"Yes"
+						"label":"<!--100-->I acknowledge that, by clicking the checkbox as my official signature, I consent to representatives of Ashland University and/or QuinStreet Education Network contacting me about educational opportunities via email, text, or phone, including my mobile phone if provided above, using an automatic dialer, or pre-recorded message. Message and data rates may apply. I understand that my consent is not a requirement for enrollment, and that I may withdraw my consent at any time.",
+						"selected":false,
+						"value":"Yes"
 					}
 				],
-				type: "Checkbox",
-				value: ""
+				"type": "Checkbox",
+				"value": ""
             }
         },
-        "order":[  
+        "order":[
+			[
+				"MilitarySeparation"
+			],
             [  
-                "ProgramsOfInterestType"
+                "ProgramOfInterest"
             ],
             [  
                 "DegreeStartTimeframe",

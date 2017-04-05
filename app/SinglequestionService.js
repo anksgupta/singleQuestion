@@ -53,8 +53,8 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 					result = false
 				}
 				deferred.resolve(result);
-			} else if(this.preConditions[fieldName] || CommonValidationService[fieldName]) {	// check if field validation is defined in controller
-				var promises = [], conditionArr = [this.preConditions[fieldName], CommonValidationService[fieldName]];
+			} else if(this.preConditions[fieldName] || CommonValidationService.fieldValidation[fieldName]) {	// check if field validation is defined in controller
+				var promises = [], conditionArr = [this.preConditions[fieldName], CommonValidationService.fieldValidation[fieldName]];
 				
 				angular.forEach(conditionArr, function(condition){
 					if(condition) {
@@ -75,7 +75,8 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 		},
 		isValidSingleQuestionStep: function(obj){		// method to validate Single Question step, one Single Question step can have multiple fields
 			var field = (obj && obj.field) ? obj.field : this.order[this.current],
-				setErrorMsg = (obj && typeof obj.setErrorMsg !== 'undefined') ? obj.setErrorMsg : true;
+				setErrorMsg = (obj && typeof obj.setErrorMsg !== 'undefined') ? obj.setErrorMsg : true,
+				stepValidationDeferred = $q.defer();
 			
 			var promises = [], stepDeferredObj = $q.defer(), self = this;
 			angular.forEach(field, function(fieldName){
@@ -85,6 +86,11 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 				});
 				promises.push(deferred.promise);
 			});
+			
+			CommonValidationService.stepvalidation(field).then(function(result){
+				stepValidationDeferred.resolve(result)
+			});
+			promises.push(stepValidationDeferred.promise);
 			$q.all(promises).then(function(fieldResult){
 				(fieldResult.indexOf(false) > -1) ? stepDeferredObj.resolve(false): stepDeferredObj.resolve(true)
 			});
