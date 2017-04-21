@@ -7,7 +7,7 @@ mainApp.factory("SingleQStepVisibilityService", ['AnimationService', function(An
 		*	stepObj: Object which contains the below map
 		*	- elementsToHide : array containing element names which this service should hide
 		*	- elementsToShow : array containing element names which this service should show
-		*	- stepDirection : contains the values next(sent in case of showNext), previous(sent in case of showPrevious), load(sent on page load)
+		*	- stepDirection : contains the values next(sent in case of showNext), previous(sent in case of showPrevious), load(sent on page load), custom(sent when a custom current value is set)
 		*/
 		showHideStep: function(stepObj) {
 			// first hide previously active step 
@@ -22,7 +22,7 @@ mainApp.factory("SingleQStepVisibilityService", ['AnimationService', function(An
 					AnimationService.slide(elementsToShow, 'Right', {duration: 400});
 					AnimationService.fadeInOut(elementsToHide, 'Out', {duration: 0});
 					break;
-				case 'load':
+				case 'custom': case 'load':
 					AnimationService.fadeInOut(elementsToShow, 'In');
 					AnimationService.fadeInOut(elementsToHide, 'Out');
 					break;

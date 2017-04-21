@@ -35,6 +35,20 @@ mainApp.factory("UserDataService", ['MyConfig', '$q', function(MyConfig, $q){
 			valueArr.push(fieldValue ? fieldValue : null);
 			return valueArr
 		},
+		/*
+		 * Try and avoid using this function.
+		 * Use this function only in cases where you want to modify a particular field's value based on some other field's value.
+		*/
+		setUserData: function(fieldName, value){
+			if(appData.user[fieldName] && value) {
+				if(typeof value === 'object') {
+					appData.user[fieldName].value = angular.extend(appData.user[fieldName].value || {}, value)
+				} else {
+					appData.user[fieldName].value = value
+				}
+			}
+			return self
+		},
 		getHiddenField: function(field){
 			var valueArr = [], fieldValue = appData.hiddenFields[field] ? appData.hiddenFields[field].value : null;
 			if(typeof fieldValue === 'object') {
@@ -46,13 +60,13 @@ mainApp.factory("UserDataService", ['MyConfig', '$q', function(MyConfig, $q){
 			valueArr.push(fieldValue);
 			return valueArr
 		},
-		setRequiredFieldMsg: function(field){
+		setErrorMsg: function(field, message){
 			if(appData.user[field]) {
-				appData.user[field].error_message = self.requiredFieldMsg
+				appData.user[field].error_message = message ? message : self.requiredFieldMsg
 			}
 			return self
 		},
-		clearRequiredFieldMsg: function(field){
+		clearErrorMsg: function(field){
 			if(appData.user[field]) {
 				appData.user[field].error_message = ''
 			}
@@ -62,10 +76,10 @@ mainApp.factory("UserDataService", ['MyConfig', '$q', function(MyConfig, $q){
 			// Add a flag over here to check if required field has to be set or not.
 			var deferred = $q.defer(), result = true;
 			for(var field in appData.user) {
-				self.clearRequiredFieldMsg(field);
+				self.clearErrorMsg(field);
 				if(self.getIsVisible(field) && self.getFieldType(field) !== 'Hidden'
 					&& self.getUserData(field).indexOf(null) > -1 && self.getIsRequired(field)) {
-						self.setRequiredFieldMsg(field);
+						self.setErrorMsg(field);
 						result = false
 				}
 			}

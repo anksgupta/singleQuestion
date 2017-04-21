@@ -1,10 +1,9 @@
   /**
-	* - To move to the next step without validating the current step, call SingleQuestion.broadcastCurrent('<next/previous>')
+	* - To move to the next step without validating the current step, call SingleQuestion.updateCurrentStep('<next/previous>')
 	*/
 mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataService', 'NotificationService', 'MyConfig', 'RouterService', '$injector', 'CommonValidationService', function($rootScope, $q, CBQService, UserDataService, NotificationService, MyConfig, RouterService, $injector, CommonValidationService){
 	var defaults = {
         callbacks: {},
-		
         steps: 0,		// steps can be set in controller if you need to break Single Question flow needs
 		preConditions: {},
         autoSubmit: false
@@ -23,7 +22,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 			// set current property of SingleQuestion object
 			self.initCurrentValue(0, function(){
 				// callback function - to broadcast 'currentUpdated' event once steps are validated and 'current' is updated
-				self.broadcastCurrent('load');
+				self.updateCurrentStep('load');
 				NotificationService.notify('singleQuestionInitialized');
 				
 				if(typeof self.callbacks['after_load'] === 'function')
@@ -36,19 +35,19 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 		isValidField: function(fieldName, setErrorMsg){	// method to validate individual field, fieldName is passed as parameter
 			var result = true, deferred = $q.defer(), data = UserDataService.getUserData(fieldName);
 		
-			UserDataService.clearRequiredFieldMsg(fieldName)
+			UserDataService.clearErrorMsg(fieldName)
 			
 			if((data.indexOf(null) > -1 || data.indexOf(MyConfig.CBQ_NOT_SHOWN) > -1) && UserDataService.getIsRequired(fieldName)) {	// check if field value contains a null value & is required.
 				if(UserDataService.getIsCBQ(fieldName)) {		// check if field is CBQ
 					if(UserDataService.getIsVisible(fieldName)){		// CBQ field is VISIBLE, then only it is considered as NOT valid
 						if(setErrorMsg)
-							UserDataService.setRequiredFieldMsg(fieldName)
+							UserDataService.setErrorMsg(fieldName)
 							
 						result = false;
 					}	
 				} else {	// field is not CBQ then it is not valid as field is empty
 					if(setErrorMsg)
-						UserDataService.setRequiredFieldMsg(fieldName)
+						UserDataService.setErrorMsg(fieldName)
 						
 					result = false
 				}
@@ -76,9 +75,8 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 		isValidSingleQuestionStep: function(obj){		// method to validate Single Question step, one Single Question step can have multiple fields
 			var field = (obj && obj.field) ? obj.field : this.order[this.current],
 				setErrorMsg = (obj && typeof obj.setErrorMsg !== 'undefined') ? obj.setErrorMsg : true,
-				stepValidationDeferred = $q.defer();
-			
-			var promises = [], stepDeferredObj = $q.defer(), self = this;
+				promises = [], stepDeferredObj = $q.defer(), self = this;
+				
 			angular.forEach(field, function(fieldName){
 				var deferred = $q.defer(); 	// creating deferred object outside foreach loop will always resolve last deferred object Promise 
 				self.isValidField(fieldName, setErrorMsg).then(function(result){
@@ -87,32 +85,50 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 				promises.push(deferred.promise);
 			});
 			
-			CommonValidationService.stepvalidation(field).then(function(result){
-				stepValidationDeferred.resolve(result)
-			});
-			promises.push(stepValidationDeferred.promise);
 			$q.all(promises).then(function(fieldResult){
 				(fieldResult.indexOf(false) > -1) ? stepDeferredObj.resolve(false): stepDeferredObj.resolve(true)
 			});
 			return stepDeferredObj.promise
 		},
 		callInjectedServices: function(){		// Calls the dynamically injected services which are injected based on A/B tests.
-			var promises = [], stepDeferredObj = $q.defer();
-			angular.forEach(RouterService.getRouteData().dependencies, function(serviceName){
-				var deferred, service;
-				// check if service exist and then only inject the service
-				$injector.has(serviceName) ? service = $injector.get(serviceName): console.error(serviceName + ': Service not found');
-				
-				// 'validate' will be a generic method in all the injected services to handle A/B tests with Single Question flow
-				if(service && typeof service.validate === 'function'){
-					// create deferred object for each Service
-					deferred = $q.defer()
-					service.validate.call(service).then(function(result) {
-						deferred.resolve(result)
-					});
-					promises.push(deferred.promise);
-				}
-			});
+			var promises = [], stepDeferredObj = $q.defer(), dependencies = RouterService.getRouteData().dependencies,
+				stepFields = this.order[this.current];
+			
+			if(dependencies.length > 0){
+				angular.forEach(dependencies, function(serviceName){
+					var deferred, service;
+					// check if service exist and then only inject the service
+					$injector.has(serviceName) ? service = $injector.get(serviceName): console.error(serviceName + ': Service not found');
+					
+					// 'validate' will be a generic method in all the injected services to handle A/B tests with Single Question flow
+					if(service && typeof service.validate === 'function'){
+						// create deferred object for each Service
+						deferred = $q.defer();
+						service.validate.call(service).then(function(result) {
+							/* 1. 'step-validate' is returned in case there is no need to execute the injected service logic & call stepValidation.
+							 * 2. If false is returned, stop at the current step.
+							 * 3. If true is returned, move to the next step.
+							*/
+							if(result === 'step-validate') {
+								CommonValidationService.stepValidation(stepFields).then(function(result){
+									deferred.resolve(result)
+								});
+							}else {
+								deferred.resolve(result);
+							}
+						});
+						promises.push(deferred.promise);
+					}
+				});
+			} else {
+				// if no service is injected call Common StepValidation service
+				var deferred = $q.defer();
+				CommonValidationService.stepValidation(stepFields).then(function(result){
+					deferred.resolve(result)
+				});
+				promises.push(deferred.promise);
+			}
+			
 			$q.all(promises).then(function(fieldResult){
 				// once all deferred object for Services are resolved, callInjectedServices promise is resolved
 				(fieldResult.indexOf(false) > -1) ? stepDeferredObj.resolve(false): stepDeferredObj.resolve(true)
@@ -137,7 +153,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 						$q.all(promise).then(function(stepFields) {
 							if(stepFields.indexOf('is-cbq') > -1 || stepFields.indexOf('is-field') > -1){
 								// if promise response has at least one valid CBQ field or a Standard field; broadcast currentUpdated
-								self.broadcastCurrent('next');
+								self.updateCurrentStep('next');
 							}else{
 								// if promise response does not have any valid CBQ field or a Standard field then current step is invalid and call the showNext step
 								self.current++;
@@ -158,7 +174,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 			if(typeof this.callbacks['before_prev'] === 'function')
 				this.callbacks['before_prev'].call(this)
 			
-			this.broadcastCurrent('previous');
+			this.updateCurrentStep('previous');
 			
 			// Call dynamically injected services once current is updated
 			this.callInjectedServices().then(function(){
@@ -166,7 +182,7 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 					self.callbacks['after_prev'].call(this)
 			})
 		},
-		broadcastCurrent: function(stepDirection){
+		updateCurrentStep: function(stepDirection, updatedCurrent){
 			var elementsToShow = [], elementsToHide = [];
 			
 			switch(stepDirection) {
@@ -178,6 +194,15 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 					elementsToHide = this.order[this.current]
 					this.current--;
 					break;
+				// 'custom' stepDirection will handle cases where you want to set custom current value.(E.g: when we submit the form and there is an error for steps other than the last step)
+				case 'custom':
+					elementsToHide = this.order[this.current];
+					this.current = (this.current !== 0) ? (this.current - 1) : 0; // In case someone passes 'custom' as the stepDirection & doesn't pass updatedCurrent, then move the user to the previous step.
+					break;
+			}
+			
+			if(typeof updatedCurrent === 'number') {
+				this.current = updatedCurrent
 			}
 			
 			for(var i = 0, currentStep = this.order[this.current]; i < currentStep.length; i++){
@@ -191,13 +216,13 @@ mainApp.factory("SingleQuestion", ['$rootScope', '$q', 'CBQService', 'UserDataSe
 			$rootScope.$emit('currentUpdated', {
 				stepDirection: stepDirection ? stepDirection : 'next',
 				elementsToHide: elementsToHide,
-				elementsToShow: elementsToShow
+				elementsToShow: elementsToShow,
+				progress: this.setProgressBarWidth()
 			});
 		},
 		// progress bar width should always be called before currentUpdated is broadcasted
 		setProgressBarWidth: function(){
-			var width = Math.floor((this.current * 100) / this.steps);
-			this.progressBarWidth = width;
+			return Math.floor((this.current * 100) / this.steps)
 		},
 		checkVisibility: function(name){
 			// check if field is in current order and visible 

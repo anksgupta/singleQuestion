@@ -657,17 +657,6 @@
                }
             ]
          },
-         /*"BirthDate": {
-            "name": "BirthDate",
-            "type": "DateInput",
-            "label": "Date of Birth:",
-            "is_cbq": false,
-            "value": "",
-            "is_hidden": false,
-            "is_required": true,
-            "is_valid": true,
-            "error_message": ""
-         },*/
          "ContactMe": {
             "name": "ContactMe",
             "type": "Hidden",

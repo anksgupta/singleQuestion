@@ -37,7 +37,7 @@ mainApp.factory("CBQService", ['HttpService', '$q', 'UserDataService', function(
 					if(isCBA){
 						// The data for CBA will be a JSON object, e.g : {101312 : true, 101314 : false}
 						angular.extend(element.options, fieldsObjCopy[fieldName].options);
-						for(var index=(criteriaObj.a.length -1); index >= 0; index--){
+						for(var index = (criteriaObj.a.length -1); index >= 0; index--){
 							if(!data[criteriaObj.a[index].k]){
 								// var defaultOptionCount = /select/i.test($elem.find('option:eq(0)').val()) ? 1 : 0;
 								var optionIndex = parseInt(Math.log(criteriaObj.a[index].i) / Math.log(2));// + defaultOptionCount

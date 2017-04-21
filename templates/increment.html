@@ -1,17 +1,28 @@
 <form id="myForm" name="myForm">
 	<h2>Increment</h2>
-	<div class="fields-section" elem-ready="repeatComplete">
-		<div ng-repeat="elem in ::order" ng-init="field = fields[elem]">
-			<div class="animate" id="input-{{::field.name}}" fieldname="{{::elem}}" user="user" directive-if="{'cbq': 'field.is_cbq === true'}" is-required="{{::user[field.name].required}}" cbq>
+	<div class="fields-section">
+		<div ng-repeat="elem in ::order" ng-init="field = fields[elem]" repeat-complete="repeatComplete,watchUserObj">
+			<div class="animate" id="input-{{::field.name}}" fieldname="{{::elem}}" cbq ng-if="::field.is_cbq" is-required="{{::user[field.name].required}}">
 				<div class="question">
 					<p>{{::field.name}} item is : {{user[field.name].value}}</p>
 				</div>
 				<div class="answer">
-					<generate-field type="{{field.type}}" user="user" field="field""></generate-field>
+					<generate-field field-type="{{::field.type}}" user="user[field.name]" field="field"></generate-field>
+				</div>
+				<div class="error" ng-bind="user[field.name].error_message"></div>
+			</div>
+			<div class="animate" id="input-{{::field.name}}" fieldname="{{::elem}}" ng-if="::!field.is_cbq" is-required="{{::user[field.name].required}}">
+				<div class="question">
+					<p>{{::field.name}} item is : {{user[field.name].value}}</p>
+				</div>
+				<div class="answer">
+					<generate-field field-type="{{::field.type}}" user="user[field.name]" field="field"></generate-field>
 				</div>
 				<div class="error" ng-bind="user[field.name].error_message"></div>
 			</div>
 		</div>
 		<submit-btn text="submit btn"></submit-btn>
+		<tracker></tracker>
+		<watch-user-obj user="user"></watch-user-obj>
 	</div>
 </form>

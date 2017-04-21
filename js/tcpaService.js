@@ -7,7 +7,7 @@ mainApp.factory("TcpaService", ['$q', '$rootScope', 'HttpService', function($q, 
 		phoneMap = {'HP': false,'WP': false},
 		broadcastConsent = function(fieldName, isNumber, deferred){
 			phoneMap[fieldName] = isNumber;
-			$rootScope.$broadcast('ShowPhoneConsent', {showConsent: (phoneMap.HP || phoneMap.WP)});
+			$rootScope.$emit('ShowPhoneConsent', {showConsent: (phoneMap.HP || phoneMap.WP)});
 			deferred.resolve(true);
 		};
 	return {

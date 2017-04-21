@@ -1,8 +1,5 @@
 @CHARSET "UTF-8";
 
-label{
-	display: block
-}
 .myclass{
 	background: #AAAAE0
 }
@@ -39,7 +36,8 @@ label{
 .rail > .inner_rail > .bar {
 	background: #f8a405;
 	height: 100%;
-	width: 0
+	width: 0;
+	transition: width 1s
 }
 .hide{
 	display: none
